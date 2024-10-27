@@ -170,6 +170,13 @@ const verifyUser = async (req, res) => {
 
   const { id: userId, adminKey } = req.body;
 
+  if (!userId) {
+    return res.status(400).json({
+      success: false,
+      message: "User id is required",
+    });
+  }
+
   if (!adminKey) {
     return res.status(400).json({
       success: false,
@@ -192,6 +199,13 @@ const verifyUser = async (req, res) => {
       { isVerified: true },
       { new: true }
     );
+
+    if (!user) {
+      return res
+        .status(400)
+        .json({ success: false, message: "User not found" });
+    }
+
     // respond with success
     return res.status(200).json({
       success: true,
