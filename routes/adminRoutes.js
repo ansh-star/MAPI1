@@ -22,7 +22,7 @@ router.put("", updateAdminDetails);
 router.delete("", deleteAdminDetails);
 
 //verify user by admin
-router.put("/verfiy-user", verifyUser);
+router.put("/verify-user", verifyUser);
 router.post("/logout", (req, res) => {
   res.clearCookie("token");
   res.json({ success: true, message: "Logged out successfully" });
