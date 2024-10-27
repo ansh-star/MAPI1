@@ -185,9 +185,13 @@ const verifyUser = async (req, res) => {
   }
   try {
     // check if the admin exists
-    const admin = await Admin.findOne({ _id: adminId, adminKey });
+    const updatedAdmin = await Admin.findOneAndUpdate(
+      { _id: adminId, adminKey },
+      { $pull: { wholesalerRequests: userId } },
+      { new: true }
+    );
 
-    if (!admin) {
+    if (!updatedAdmin) {
       return res.status(400).json({
         success: false,
         message: "Admin does not exists with this id or admin key",
@@ -210,7 +214,6 @@ const verifyUser = async (req, res) => {
     return res.status(200).json({
       success: true,
       message: "User verified successfully",
-      user: user.toObject(),
     });
   } catch (error) {
     console.error(error);
