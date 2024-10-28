@@ -168,7 +168,7 @@ const verifyUser = async (req, res) => {
     });
   }
 
-  const { id: userId, adminKey } = req.body;
+  const { id: userId } = req.body;
 
   if (!userId) {
     return res.status(400).json({
@@ -185,11 +185,9 @@ const verifyUser = async (req, res) => {
   }
   try {
     // check if the admin exists
-    const updatedAdmin = await Admin.findOneAndUpdate(
-      { _id: adminId, adminKey },
-      { $pull: { wholesalerRequests: userId } },
-      { new: true }
-    );
+    const updatedAdmin = await Admin.updateMany({
+      $pull: { wholesalerRequests: userId },
+    });
 
     if (!updatedAdmin) {
       return res.status(400).json({
