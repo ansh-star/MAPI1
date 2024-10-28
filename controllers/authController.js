@@ -1,8 +1,6 @@
 const Admin = require("../models/Admin");
-const jwt = require("jsonwebtoken");
 const { validationResult } = require("express-validator");
 const User = require("../models/User"); // Import your User model
-const { generateToken } = require("../utils/tokenGenerator");
 const Roles = require("../utils/roles");
 
 // Function to handle Admin signup
@@ -30,9 +28,6 @@ const signupAdmin = async (req, res) => {
     res.status(201).json({
       success: true,
       message: "Admin registered successfully!",
-      role: Roles.ADMIN,
-      user: admin.toObject(),
-      token: generateToken({ _id: admin._id, role: Roles.ADMIN }),
     });
   } catch (error) {
     res.status(500).json({
@@ -119,8 +114,6 @@ const signupUser = async (req, res) => {
     res.status(201).json({
       success: true,
       message: "User created successfully!",
-      user: newUser.toObject(),
-      token: generateToken(newUser),
     });
   } catch (error) {
     console.error(error);
@@ -134,13 +127,7 @@ const loginAdmin = async (req, res) => {
 
   try {
     // paging in product list
-    const admin = await Admin.findOne({ mobileNumber, adminKey })
-      .populate({
-        path: "wholesalerRequests", // Path to populate
-        match: { role: Roles.WHOLESALER, user_verified: false }, // Condition: Only fetch users with role: 1 (wholesalers) and user_verified: false
-        options: { limit: 10 },
-      })
-      .populate({ path: "productList", option: { limit: 10 } });
+    const admin = await Admin.findOne({ mobileNumber, adminKey });
 
     if (!admin) {
       return res
@@ -148,13 +135,9 @@ const loginAdmin = async (req, res) => {
         .json({ success: false, message: "Invalid credentials" });
     }
 
-    const token = generateToken({ _id: admin._id, role: Roles.ADMIN });
-
     res.status(201).json({
       success: true,
       message: "Login successful",
-      user: admin.toObject(),
-      token,
     });
   } catch (error) {
     res
@@ -168,26 +151,19 @@ const loginUser = async (req, res) => {
   const { mobileNumber } = req.body;
 
   try {
-    // Check if the user exists by mobile number and username
-    const user = await User.findOne({ mobileNumber })
-      .populate({ path: "products", option: { limit: 10 } })
-      .populate({
-        path: "cart.productId", // Populates the 'productId' inside 'cart'
-        options: { limit: 10 },
-      });
+    // Check if the user exists by mobile number
+    const user = await User.findOne({ mobileNumber });
 
     if (!user) {
       return res.status(400).json({
         success: false,
-        message: "Invalid mobile number or username.",
+        message: "Invalid mobile number.",
       });
     } else {
-      // Successful login, return user data (you might want to include a JWT token here for session management)
+      // Successful login
       return res.status(200).json({
         success: true,
         message: "Login successful!",
-        user: user.toObject(),
-        token: generateToken(user),
       });
     }
   } catch (error) {
