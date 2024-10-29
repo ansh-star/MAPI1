@@ -19,7 +19,7 @@ const generateToken = (user) => {
 // Middleware to verify the token
 const verifyToken = (req, res, next) => {
   // Token is typically sent in the Authorization header (e.g., 'Bearer <token>')
-  const token = req.headers.authorization.split(" ")[1];
+  const token = req.headers.authorization?.split(" ")[1];
 
   if (!token) {
     return res

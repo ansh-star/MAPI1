@@ -1,33 +1,22 @@
-const Admin = require("../models/Admin");
 const { validationResult } = require("express-validator");
+const Admin = require("../models/Admin");
 const User = require("../models/User"); // Import your User model
+const { doesAdminExist, doesUserExist } = require("../utils/doesUserExist");
 const Roles = require("../utils/roles");
+const { generateToken } = require("../utils/tokenGenerator");
 
 // Function to handle Admin signup
 const signupAdmin = async (req, res) => {
-  const errors = validationResult(req);
-
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ success: false, errors: errors.array() });
-  }
-
   const { username, mobileNumber, location, adminKey } = req.body;
   try {
-    const isExistUser = await Admin.findOne({ mobileNumber });
-
-    if (isExistUser) {
-      return res.status(200).json({
-        success: true,
-        message: "Phone Number already Exists",
-      });
-    }
-
     const admin = new Admin({ username, mobileNumber, location, adminKey });
     await admin.save();
 
     res.status(201).json({
       success: true,
       message: "Admin registered successfully!",
+      user: admin.toObject(),
+      token: generateToken({ _id: admin._id, role: Roles.ADMIN }),
     });
   } catch (error) {
     res.status(500).json({
@@ -40,16 +29,6 @@ const signupAdmin = async (req, res) => {
 
 // Signup function for user
 const signupUser = async (req, res) => {
-  // Validate request body
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({
-      success: false,
-      message: "User Sign Up failed",
-      errors: errors.array(),
-    });
-  }
-
   const {
     username,
     fullName,
@@ -64,30 +43,6 @@ const signupUser = async (req, res) => {
   } = req.body;
 
   try {
-    // Check if the user already exists
-    const existingUser = await User.findOne({ mobileNumber });
-    if (existingUser) {
-      return res.status(400).json({
-        success: false,
-        message: "User already exists with this mobile number.",
-      });
-    }
-
-    // If the role is Wholeseller (1) or Retailer (2), ensure mandatory fields are provided
-    if (role === Roles.WHOLESALER || role === Roles.RETAILER) {
-      if (
-        !shopOrHospitalName ||
-        !dealershipLicenseNumber ||
-        !dealershipLicenseImage
-      ) {
-        return res.status(400).json({
-          status: false,
-          message:
-            "Shop/Hospital Name, Dealership License Number, and Dealership License Image are required for Wholeseller and Retailer.",
-        });
-      }
-    }
-
     // Create a new user
     const newUser = new User({
       username,
@@ -114,6 +69,8 @@ const signupUser = async (req, res) => {
     res.status(201).json({
       success: true,
       message: "User created successfully!",
+      user: newUser.toObject(),
+      token: generateToken(newUser),
     });
   } catch (error) {
     console.error(error);
@@ -127,7 +84,13 @@ const loginAdmin = async (req, res) => {
 
   try {
     // paging in product list
-    const admin = await Admin.findOne({ mobileNumber, adminKey });
+    const admin = await Admin.findOne({ mobileNumber, adminKey })
+      .populate({
+        path: "wholesalerRequests", // Path to populate
+        match: { role: Roles.WHOLESALER, user_verified: false }, // Condition: Only fetch users with role: 1 (wholesalers) and user_verified: false
+        options: { limit: 50 },
+      })
+      .populate({ path: "productList", option: { limit: 50 } });
 
     if (!admin) {
       return res
@@ -135,9 +98,13 @@ const loginAdmin = async (req, res) => {
         .json({ success: false, message: "Invalid credentials" });
     }
 
+    const token = generateToken({ _id: admin._id, role: Roles.ADMIN });
+
     res.status(201).json({
       success: true,
       message: "Login successful",
+      user: admin.toObject(),
+      token,
     });
   } catch (error) {
     res
@@ -151,19 +118,26 @@ const loginUser = async (req, res) => {
   const { mobileNumber } = req.body;
 
   try {
-    // Check if the user exists by mobile number
-    const user = await User.findOne({ mobileNumber });
+    // Check if the user exists by mobile number and username
+    const user = await User.findOne({ mobileNumber })
+      .populate({ path: "products", option: { limit: 10 } })
+      .populate({
+        path: "cart.productId", // Populates the 'productId' inside 'cart'
+        options: { limit: 10 },
+      });
 
     if (!user) {
       return res.status(400).json({
         success: false,
-        message: "Invalid mobile number.",
+        message: "Invalid mobile number or username.",
       });
     } else {
-      // Successful login
+      // Successful login, return user data (you might want to include a JWT token here for session management)
       return res.status(200).json({
         success: true,
         message: "Login successful!",
+        user: user.toObject(),
+        token: generateToken(user),
       });
     }
   } catch (error) {
@@ -171,9 +145,135 @@ const loginUser = async (req, res) => {
     res.status(500).json({ success: false, message: "Server error" });
   }
 };
+
+const checkAdminNotExist = async (req, res, next) => {
+  const errors = validationResult(req);
+
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ success: false, errors: errors.array() });
+  }
+  // Check if any of the unique fields already exist
+  const { username, mobileNumber, adminKey } = req.body;
+
+  const existingAdmin = await Admin.findOne({
+    $or: [{ username }, { mobileNumber }, { adminKey }],
+  });
+
+  // If an existing admin is found, determine which field conflicts
+  if (existingAdmin) {
+    if (existingAdmin.username === username) {
+      return res
+        .status(400)
+        .json({ success: false, error: "Username already exists" });
+    }
+    if (existingAdmin.mobileNumber === mobileNumber) {
+      return res
+        .status(400)
+        .json({ success: false, error: "Mobile Number already exists" });
+    }
+    if (existingAdmin.adminKey === adminKey) {
+      return res
+        .status(400)
+        .json({ success: false, error: "Admin Key already exists" });
+    }
+  }
+
+  next();
+};
+
+const checkAdminExist = (req, res, next) => {
+  const { mobileNumber } = req.body;
+
+  if (!doesAdminExist(mobileNumber)) {
+    return res.status(400).json({
+      success: false,
+      message: "Admin does not exists with this mobile number.",
+    });
+  }
+
+  next();
+};
+
+const checkUserNotExist = async (req, res, next) => {
+  const errors = validationResult(req);
+
+  if (!errors.isEmpty()) {
+    return res.status(400).json({
+      success: false,
+      message: "User Sign Up failed",
+      errors: errors.array(),
+    });
+  }
+  // Check if any of the unique fields already exist
+  const {
+    username,
+    mobileNumber,
+    role,
+    dealershipLicenseNumber,
+    shopOrHospitalName,
+  } = req.body;
+  let check = [{ username }, { mobileNumber }];
+  // If the role is Wholeseller (1) or Retailer (2), ensure mandatory fields are provided
+  if (role === Roles.WHOLESALER || role === Roles.RETAILER) {
+    if (!shopOrHospitalName || !dealershipLicenseNumber) {
+      return res.status(400).json({
+        status: false,
+        message:
+          "Shop/Hospital Name, Dealership License Number, and Dealership License Image are required for Wholeseller and Retailer.",
+      });
+    }
+    check.push({ dealershipLicenseNumber });
+  }
+
+  const existingUser = await User.findOne({
+    $or: check,
+  });
+
+  if (existingUser) {
+    if (existingUser.username === username) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Username already exists" });
+    }
+    if (existingUser.mobileNumber === mobileNumber) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Mobile Number already exists" });
+    }
+    if (
+      dealershipLicenseNumber &&
+      existingUser.dealershipLicenseNumber === dealershipLicenseNumber
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Dealership License Number already exists",
+      });
+    }
+  }
+
+  next();
+};
+
+const checkUserExist = (req, res, next) => {
+  const { mobileNumber } = req.body;
+
+  if (!doesUserExist(mobileNumber)) {
+    return res.status(400).json({
+      success: false,
+      message: "User does not exists with this mobile number.",
+    });
+  }
+
+  next();
+};
+
 module.exports = {
   signupAdmin,
   signupUser,
   loginAdmin,
   loginUser,
+  checkAdminNotExist,
+  checkAdminExist,
+  checkUserNotExist,
+  checkUserExist,
 };

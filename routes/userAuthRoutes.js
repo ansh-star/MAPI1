@@ -1,5 +1,10 @@
 const express = require("express");
-const { signupUser, loginUser } = require("../controllers/authController");
+const {
+  signupUser,
+  loginUser,
+  checkUserNotExist,
+  checkUserExist,
+} = require("../controllers/authController");
 const {
   validateUserSignupBody,
   validateUserLoginBody,
@@ -7,14 +12,17 @@ const {
 const { updateUserDetails } = require("../controllers/updateController");
 const { verifyToken } = require("../utils/tokenGenerator");
 const { deleteUserDetails } = require("../controllers/deleteController");
+const { sendOTP, verifyOTP } = require("../controllers/otpController");
 
 const router = express.Router();
 
 // Route for user signup
-router.post("/signup", validateUserSignupBody, signupUser);
+router.post("/signup-otp", validateUserSignupBody, checkUserNotExist, sendOTP);
+router.post("/verify-signup-otp", verifyOTP, signupUser);
 
 // Route for user login
-router.post("/login", validateUserLoginBody, loginUser);
+router.post("/login-otp", validateUserLoginBody, checkUserExist, sendOTP);
+router.post("/verify-login-otp", verifyOTP, loginUser);
 
 // Middleware to verify the token for subsequent routes
 router.use(verifyToken);

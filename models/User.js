@@ -2,13 +2,13 @@ const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
 const userSchema = new mongoose.Schema({
-  username: { type: String, required: true },
+  username: { type: String, required: true, unique: true },
   fullName: { type: String, required: true },
   shopOrHospitalName: { type: String }, // For Wholeseller and Retailer
-  mobileNumber: { type: String, required: true },
+  mobileNumber: { type: String, required: true, unique: true },
   location: { type: String, required: true },
   email: { type: String },
-  dealershipLicenseNumber: { type: String }, // For Wholeseller and Retailer
+  dealershipLicenseNumber: { type: String, unique: true }, // For Wholeseller and Retailer
   dealershipLicenseImage: { type: String }, // For Wholeseller and Retailer
 
   // Products for Wholeseller and Retailer
