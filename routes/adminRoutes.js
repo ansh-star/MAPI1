@@ -20,16 +20,15 @@ const { verifyOTP, sendOTP } = require("../controllers/otpController");
 
 // Signup for Admin
 router.post(
-  "/signup-otp",
+  "/signup",
   validateAdminSignUpBody,
   checkAdminNotExist,
+  signupAdmin,
   sendOTP
 );
-router.post("/verify-signup-otp", verifyOTP, signupAdmin);
-
 // Login for Admin
-router.post("/login-otp", validateAdminLoginBody, checkAdminExist, sendOTP);
-router.post("/verify-login-otp", verifyOTP, loginAdmin);
+router.post("/login", validateAdminLoginBody, checkAdminExist, sendOTP);
+router.post("/verify-otp", verifyOTP, loginAdmin);
 
 // updation and deletion of admin information
 router.use(verifyToken);

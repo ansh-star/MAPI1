@@ -37,12 +37,7 @@ const validateAdminLoginBody = [
     .isMobilePhone()
     .withMessage("Mobile number must be a valid phone number"),
 
-  body("adminKey")
-    .notEmpty()
-    .withMessage("Admin key is required")
-    .bail()
-    .isLength({ min: 8 })
-    .withMessage("Admin key must be at least 8 characters long"),
+  body("adminKey").notEmpty().withMessage("Admin key is required"),
 ];
 
 const validateUserSignupBody = [

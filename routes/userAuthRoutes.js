@@ -17,12 +17,18 @@ const { sendOTP, verifyOTP } = require("../controllers/otpController");
 const router = express.Router();
 
 // Route for user signup
-router.post("/signup-otp", validateUserSignupBody, checkUserNotExist, sendOTP);
-router.post("/verify-signup-otp", verifyOTP, signupUser);
-
+router.post(
+  "/signup",
+  validateUserSignupBody,
+  checkUserNotExist,
+  signupUser,
+  sendOTP
+);
 // Route for user login
-router.post("/login-otp", validateUserLoginBody, checkUserExist, sendOTP);
-router.post("/verify-login-otp", verifyOTP, loginUser);
+router.post("/login", validateUserLoginBody, checkUserExist, sendOTP);
+
+// Route to verify OTP
+router.post("/verify-otp", verifyOTP, loginUser);
 
 // Middleware to verify the token for subsequent routes
 router.use(verifyToken);

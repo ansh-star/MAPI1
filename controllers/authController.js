@@ -6,18 +6,17 @@ const Roles = require("../utils/roles");
 const { generateToken } = require("../utils/tokenGenerator");
 
 // Function to handle Admin signup
-const signupAdmin = async (req, res) => {
+const signupAdmin = async (req, res, next) => {
   const { username, mobileNumber, location, adminKey } = req.body;
   try {
     const admin = new Admin({ username, mobileNumber, location, adminKey });
     await admin.save();
 
-    res.status(201).json({
-      success: true,
-      message: "Admin registered successfully!",
-      user: admin.toObject(),
-      token: generateToken({ _id: admin._id, role: Roles.ADMIN }),
-    });
+    // res.status(201).json({
+    //   success: true,
+    //   message: "Admin registered successfully!",
+    // });
+    next();
   } catch (error) {
     res.status(500).json({
       success: false,
@@ -28,7 +27,7 @@ const signupAdmin = async (req, res) => {
 };
 
 // Signup function for user
-const signupUser = async (req, res) => {
+const signupUser = async (req, res, next) => {
   const {
     username,
     fullName,
@@ -65,13 +64,7 @@ const signupUser = async (req, res) => {
       await Admin.updateMany({ $push: { wholesalerRequests: newUser._id } });
     }
 
-    // Respond with success
-    res.status(201).json({
-      success: true,
-      message: "User created successfully!",
-      user: newUser.toObject(),
-      token: generateToken(newUser),
-    });
+    next();
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server error" });
@@ -120,10 +113,10 @@ const loginUser = async (req, res) => {
   try {
     // Check if the user exists by mobile number and username
     const user = await User.findOne({ mobileNumber })
-      .populate({ path: "products", option: { limit: 10 } })
+      .populate({ path: "products", option: { limit: 50 } })
       .populate({
         path: "cart.productId", // Populates the 'productId' inside 'cart'
-        options: { limit: 10 },
+        options: { limit: 50 },
       });
 
     if (!user) {
@@ -154,19 +147,14 @@ const checkAdminNotExist = async (req, res, next) => {
     }
 
     // Check if any of the unique fields already exist
-    const { username, mobileNumber, adminKey } = req.body;
+    const { mobileNumber, adminKey } = req.body;
 
     const existingAdmin = await Admin.findOne({
-      $or: [{ username }, { mobileNumber }, { adminKey }],
+      $or: [{ mobileNumber }, { adminKey }],
     });
 
     // If an existing admin is found, determine which field conflicts
     if (existingAdmin) {
-      if (existingAdmin.username === username) {
-        return res
-          .status(400)
-          .json({ success: false, error: "Username already exists" });
-      }
       if (existingAdmin.mobileNumber === mobileNumber) {
         return res
           .status(400)
@@ -216,15 +204,10 @@ const checkUserNotExist = async (req, res, next) => {
     }
 
     // Check if any of the unique fields already exist
-    const {
-      username,
-      mobileNumber,
-      role,
-      dealershipLicenseNumber,
-      shopOrHospitalName,
-    } = req.body;
+    const { mobileNumber, role, dealershipLicenseNumber, shopOrHospitalName } =
+      req.body;
 
-    let check = [{ username }, { mobileNumber }];
+    let check = [{ mobileNumber }];
 
     // If the role is Wholeseller (1) or Retailer (2), ensure mandatory fields are provided
     if (role === Roles.WHOLESALER || role === Roles.RETAILER) {
@@ -241,11 +224,6 @@ const checkUserNotExist = async (req, res, next) => {
     const existingUser = await User.findOne({ $or: check });
 
     if (existingUser) {
-      if (existingUser.username === username) {
-        return res
-          .status(400)
-          .json({ success: false, message: "Username already exists" });
-      }
       if (existingUser.mobileNumber === mobileNumber) {
         return res
           .status(400)

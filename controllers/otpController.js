@@ -13,10 +13,9 @@ const sendOTP = async (req, res) => {
       phone: mobileNumber,
     });
 
-    return res.json({
+    return res.status(200).json({
       success: true,
       message: "OTP sent successfully",
-      sessionId: response?.data?.Details, // Session ID for further verification
     });
   } catch (error) {
     res.status(500).json({
@@ -37,8 +36,10 @@ const verifyOTP = async (req, res, next) => {
       otp,
     });
 
-    if (response.data.Status) {
-      return res.status(200).json({ success: false, message: "Invalid OTP" });
+    if (!response.data.status) {
+      return res
+        .status(200)
+        .json({ success: false, message: response.data.message });
     }
     next();
   } catch (error) {
