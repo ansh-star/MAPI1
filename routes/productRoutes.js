@@ -5,6 +5,7 @@ const { addProduct } = require("../controllers/addController");
 const { updateProducts } = require("../controllers/updateController");
 const { deleteProducts } = require("../controllers/deleteController");
 const { getProducts } = require("../controllers/getProductController");
+const { searchProducts } = require("../controllers/searchController");
 const router = express.Router();
 
 //verfiy token
@@ -12,6 +13,8 @@ router.use(verifyToken);
 
 // get products according to pageNumber and limit
 router.get("", getProducts);
+
+router.get("/search", searchProducts);
 
 //verify role of user
 router.use(verifyRole);

@@ -247,6 +247,15 @@ const checkUserNotExist = async (req, res, next) => {
 
 const checkUserExist = async (req, res, next) => {
   try {
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+      return res.status(200).json({
+        success: false,
+        errors: errors.array(),
+      });
+    }
+
     const { mobileNumber } = req.body;
 
     const userCheck = await doesUserExist(mobileNumber);

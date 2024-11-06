@@ -1,0 +1,59 @@
+const Product = require("../models/Product");
+
+const searchProducts = async (req, res) => {
+  const { search, page = 1, limit = 50 } = req.query;
+
+  // Build a dynamic query object with an OR condition to match any of the fields
+  const query = {};
+
+  if (search) {
+    query.$or = [
+      { Medicine_Name: new RegExp(search, "i") }, // Matches medicine name containing search
+      { Manufacturer: new RegExp(search, "i") }, // Matches manufacturer name containing search
+      { Composition: new RegExp(search, "i") }, // Matches composition containing search
+    ];
+  }
+
+  try {
+    const skip = (page - 1) * limit;
+
+    const products = await Product.find(query).skip(skip).limit(limit).lean();
+
+    const total = await Product.countDocuments(query);
+
+    // If no products match the search, return a status message and an empty array
+    if (products.length === 0) {
+      return res.status(200).json({
+        success: false,
+        message: "No products match your search",
+        products: [],
+        total: 0,
+        page: parseInt(page),
+        totalPages: 0,
+      });
+    }
+
+    res.json({
+      success: true,
+      message: "Products matching your search retrieved successfully",
+      products,
+      total,
+      page: parseInt(page),
+      totalPages: Math.ceil(total / limit),
+    });
+  } catch (error) {
+    console.error("Error fetching products:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server Error",
+      products: [],
+      total: 0,
+      page: 1,
+      totalPages: 0,
+    });
+  }
+};
+
+module.exports = {
+  searchProducts,
+};
