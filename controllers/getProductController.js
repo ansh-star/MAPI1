@@ -8,8 +8,7 @@ const getProducts = async (req, res) => {
   const { id: userid, role } = req.user;
 
   // Extract pagination parameters from the request body
-  const { pageNumber, limit } = req.body;
-
+  const { pageNumber, limit } = req.query;
   try {
     // Check if the user role is ADMIN
     if (role === Roles.ADMIN) {
@@ -25,7 +24,7 @@ const getProducts = async (req, res) => {
 
       // Step 1: Shuffle all products with a large sample size (here, 100).
       const products = await Product.aggregate([
-        { $sample: { size: limit } }, // Randomly sample 'limit' number of products
+        { $sample: { size: parseInt(limit) } }, // Randomly sample 'limit' number of products
       ]);
 
       // Respond with the products found
@@ -45,8 +44,8 @@ const getProducts = async (req, res) => {
       const products = await User.findOne({ _id: userid }).populate({
         path: "products", // Specify the path to populate
         options: {
-          limit: limit,
-          skip: ((pageNumber || 1) - 1) * 10,
+          limit: parseInt(limit),
+          skip: ((parseInt(pageNumber) || 1) - 1) * 10,
         },
       });
       // If the user is not found, return an error
@@ -59,7 +58,7 @@ const getProducts = async (req, res) => {
       return res.status(200).json({ success: true, products });
     } else {
       const products = await Product.aggregate([
-        { $sample: { size: limit } }, // Randomly sample 'limit' number of products
+        { $sample: { size: parseInt(limit) } }, // Randomly sample 'limit' number of products
       ]);
       return res.status(200).json({ success: true, products });
     }
