@@ -174,7 +174,9 @@ const checkAdminExist = async (req, res, next) => {
   try {
     const { mobileNumber } = req.body;
 
-    if (!doesAdminExist(mobileNumber)) {
+    const adminExist = await doesAdminExist(mobileNumber);
+
+    if (!adminExist) {
       return res.status(400).json({
         success: false,
         message: "Admin does not exists with this mobile number.",
@@ -247,7 +249,9 @@ const checkUserExist = async (req, res, next) => {
   try {
     const { mobileNumber } = req.body;
 
-    if (!doesUserExist(mobileNumber)) {
+    const userCheck = await doesUserExist(mobileNumber);
+
+    if (!userCheck) {
       return res.status(400).json({
         success: false,
         message: "User does not exists with this mobile number.",
