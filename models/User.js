@@ -8,7 +8,7 @@ const userSchema = new mongoose.Schema({
   mobileNumber: { type: String, required: true, unique: true },
   location: { type: String, required: true },
   email: { type: String },
-  dealershipLicenseNumber: { type: String, unique: true }, // For Wholeseller and Retailer
+  dealershipLicenseNumber: { type: String }, // For Wholeseller and Retailer
   dealershipLicenseImage: { type: String }, // For Wholeseller and Retailer
 
   // Products for Wholeseller and Retailer
