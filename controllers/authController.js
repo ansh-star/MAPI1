@@ -12,10 +12,6 @@ const signupAdmin = async (req, res, next) => {
     const admin = new Admin({ username, mobileNumber, location, adminKey });
     await admin.save();
 
-    // res.status(201).json({
-    //   success: true,
-    //   message: "Admin registered successfully!",
-    // });
     next();
   } catch (error) {
     res.status(500).json({
@@ -67,7 +63,7 @@ const signupUser = async (req, res, next) => {
     next();
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({ success: false, message: "Server error" });
   }
 };
 
