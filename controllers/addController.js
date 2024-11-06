@@ -36,13 +36,16 @@ const addProduct = async (req, res) => {
       );
     }
     return res.status(201).json({
+      success: true,
       message: "Product created successfully",
       product: newProduct.toObject(),
     });
   } catch (error) {
-    res
-      .status(500)
-      .json({ error: "Failed to create product", details: error.message });
+    res.status(200).json({
+      success: false,
+      error: "Failed to create product",
+      details: error.message,
+    });
   }
 };
 

@@ -19,7 +19,7 @@ const getProducts = async (req, res) => {
       // If the admin is not found, return an error
       if (!admin) {
         return res
-          .status(404)
+          .status(200)
           .json({ success: false, message: "Admin not found" });
       }
 
@@ -36,7 +36,7 @@ const getProducts = async (req, res) => {
 
     if (!user) {
       return res
-        .status(404)
+        .status(200)
         .json({ success: false, message: "User not found" });
     }
 
@@ -52,7 +52,7 @@ const getProducts = async (req, res) => {
       // If the user is not found, return an error
       if (!products) {
         return res
-          .status(404)
+          .status(200)
           .json({ success: false, message: "User not found" });
       }
       // Respond with the user and their products
@@ -65,7 +65,7 @@ const getProducts = async (req, res) => {
     }
   } catch (error) {
     console.error(error.message);
-    return res.status(500).json({ success: false, message: error.message });
+    return res.status(200).json({ success: false, message: error.message });
   }
 };
 

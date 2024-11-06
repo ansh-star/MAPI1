@@ -6,13 +6,13 @@ const deleteAdminDetails = async (req, res) => {
   const { adminKey } = req.body;
   const { role, id } = req.user;
   if (!adminKey) {
-    return res.status(400).json({
+    return res.status(200).json({
       success: false,
       message: "Please provide admin key",
     });
   }
   if (role !== Roles.ADMIN) {
-    return res.status(403).json({
+    return res.status(200).json({
       success: false,
       message: "You are not authorized to delete an admin",
     });
@@ -22,7 +22,7 @@ const deleteAdminDetails = async (req, res) => {
     const deletedAdmin = await Admin.findOneAndDelete({ _id: id, adminKey });
 
     if (!deletedAdmin) {
-      return res.status(400).json({
+      return res.status(200).json({
         success: false,
         message: "Admin does not exists with this id and admin key.",
       });
@@ -35,7 +35,7 @@ const deleteAdminDetails = async (req, res) => {
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ success: false, message: "Server error" });
+    res.status(200).json({ success: false, message: "Server error" });
   }
 };
 
@@ -44,7 +44,7 @@ const deleteUserDetails = async (req, res) => {
     // Delete a user
     const existingUser = await User.findOneAndDelete({ _id: req.user.id });
     if (!existingUser) {
-      return res.status(400).json({
+      return res.status(200).json({
         success: false,
         message: "User does not exists with this id.",
       });
@@ -57,7 +57,7 @@ const deleteUserDetails = async (req, res) => {
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ success: false, message: "Server error" });
+    res.status(200).json({ success: false, message: "Server error" });
   }
 };
 
@@ -74,7 +74,7 @@ const deleteProducts = async (req, res) => {
       );
       // if product not in the wholesaler products array the user cannot delete the product
       if (!userProductDeletion) {
-        return res.status(400).json({
+        return res.status(200).json({
           success: false,
           message: "This user does not exists with this id.",
         });
@@ -85,7 +85,7 @@ const deleteProducts = async (req, res) => {
 
     // no such product exists then return error
     if (!deletedProduct) {
-      return res.status(400).json({
+      return res.status(200).json({
         success: false,
         message: "Product does not exists with this id.",
       });
@@ -105,8 +105,38 @@ const deleteProducts = async (req, res) => {
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ success: false, message: "Server error" });
+    res.status(200).json({ success: false, message: "Server error" });
   }
 };
 
-module.exports = { deleteUserDetails, deleteAdminDetails, deleteProducts };
+const deleteProductFromCart = async (req, res) => {
+  const { productId } = req.body;
+  const { id } = req.user;
+  try {
+    const user = await User.findOneAndUpdate(
+      { _id: id },
+      { $pull: { cart: { productId } } }
+    );
+    if (!user) {
+      return res
+        .status(200)
+        .json({ success: false, message: "User not found" });
+    }
+    res.status(200).json({
+      success: true,
+      message: "Product deleted from cart successfully",
+    });
+  } catch (error) {
+    console.error(error);
+    res
+      .status(200)
+      .json({ success: false, message: "Cannot delete product from cart" });
+  }
+};
+
+module.exports = {
+  deleteUserDetails,
+  deleteAdminDetails,
+  deleteProducts,
+  deleteProductFromCart,
+};

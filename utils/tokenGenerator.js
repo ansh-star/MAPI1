@@ -23,7 +23,7 @@ const verifyToken = (req, res, next) => {
 
   if (!token) {
     return res
-      .status(401)
+      .status(200)
       .json({ success: false, message: "Access denied. No token provided." });
   }
 
@@ -33,7 +33,7 @@ const verifyToken = (req, res, next) => {
     req.user = decoded; // Attach the decoded user information (e.g., id, role)
     next(); // Pass to the next middleware/route handler
   } catch (error) {
-    return res.status(400).json({ success: false, message: "Invalid token" });
+    return res.status(200).json({ success: false, message: "Invalid token" });
   }
 };
 
@@ -42,7 +42,7 @@ const verifyRole = (req, res, next) => {
 
   if (role === Roles.DELIVERY_PARTNER || role === Roles.RETAILER) {
     return res
-      .status(400)
+      .status(200)
       .json({ success: false, message: "This role cannot add a product" });
   }
 

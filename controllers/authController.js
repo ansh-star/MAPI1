@@ -14,7 +14,7 @@ const signupAdmin = async (req, res, next) => {
 
     next();
   } catch (error) {
-    res.status(500).json({
+    res.status(200).json({
       success: false,
       message: "Admin registration failed",
       error: error.message,
@@ -63,7 +63,7 @@ const signupUser = async (req, res, next) => {
     next();
   } catch (error) {
     console.error(error);
-    res.status(500).json({ success: false, message: "Server error" });
+    res.status(200).json({ success: false, message: "Server error" });
   }
 };
 
@@ -83,7 +83,7 @@ const loginAdmin = async (req, res) => {
 
     if (!admin) {
       return res
-        .status(401)
+        .status(200)
         .json({ success: false, message: "Invalid credentials" });
     }
 
@@ -97,7 +97,7 @@ const loginAdmin = async (req, res) => {
     });
   } catch (error) {
     res
-      .status(500)
+      .status(200)
       .json({ success: false, message: "Login failed", error: error.message });
   }
 };
@@ -116,7 +116,7 @@ const loginUser = async (req, res) => {
       });
 
     if (!user) {
-      return res.status(400).json({
+      return res.status(200).json({
         success: false,
         message: "Invalid mobile number or username.",
       });
@@ -131,7 +131,7 @@ const loginUser = async (req, res) => {
     }
   } catch (error) {
     console.error(error);
-    res.status(500).json({ success: false, message: "Server error" });
+    res.status(200).json({ success: false, message: "Server error" });
   }
 };
 
@@ -139,7 +139,7 @@ const checkAdminNotExist = async (req, res, next) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      return res.status(400).json({ success: false, errors: errors.array() });
+      return res.status(200).json({ success: false, errors: errors.array() });
     }
 
     // Check if any of the unique fields already exist
@@ -153,12 +153,12 @@ const checkAdminNotExist = async (req, res, next) => {
     if (existingAdmin) {
       if (existingAdmin.mobileNumber === mobileNumber) {
         return res
-          .status(400)
+          .status(200)
           .json({ success: false, error: "Mobile Number already exists" });
       }
       if (existingAdmin.adminKey === adminKey) {
         return res
-          .status(400)
+          .status(200)
           .json({ success: false, error: "Admin Key already exists" });
       }
     }
@@ -166,7 +166,7 @@ const checkAdminNotExist = async (req, res, next) => {
     next();
   } catch (error) {
     console.log(error);
-    res.status(500).json({ success: false, error: "Server error" });
+    res.status(200).json({ success: false, error: "Server error" });
   }
 };
 
@@ -177,7 +177,7 @@ const checkAdminExist = async (req, res, next) => {
     const adminExist = await doesAdminExist(mobileNumber);
 
     if (!adminExist) {
-      return res.status(400).json({
+      return res.status(200).json({
         success: false,
         message: "Admin does not exists with this mobile number.",
       });
@@ -185,7 +185,7 @@ const checkAdminExist = async (req, res, next) => {
 
     next();
   } catch (error) {
-    res.status(500).json({ success: false, error: "Server error" });
+    res.status(200).json({ success: false, error: "Server error" });
   }
 };
 
@@ -194,7 +194,7 @@ const checkUserNotExist = async (req, res, next) => {
     const errors = validationResult(req);
 
     if (!errors.isEmpty()) {
-      return res.status(400).json({
+      return res.status(200).json({
         success: false,
         message: "User Sign Up failed",
         errors: errors.array(),
@@ -210,7 +210,7 @@ const checkUserNotExist = async (req, res, next) => {
     // If the role is Wholeseller (1) or Retailer (2), ensure mandatory fields are provided
     if (role === Roles.WHOLESALER || role === Roles.RETAILER) {
       if (!shopOrHospitalName || !dealershipLicenseNumber) {
-        return res.status(400).json({
+        return res.status(200).json({
           success: false,
           message:
             "Shop/Hospital Name, Dealership License Number, and Dealership License Image are required for Wholeseller and Retailer.",
@@ -224,14 +224,14 @@ const checkUserNotExist = async (req, res, next) => {
     if (existingUser) {
       if (existingUser.mobileNumber === mobileNumber) {
         return res
-          .status(400)
+          .status(200)
           .json({ success: false, message: "Mobile Number already exists" });
       }
       if (
         dealershipLicenseNumber &&
         existingUser.dealershipLicenseNumber === dealershipLicenseNumber
       ) {
-        return res.status(400).json({
+        return res.status(200).json({
           success: false,
           message: "Dealership License Number already exists",
         });
@@ -241,7 +241,7 @@ const checkUserNotExist = async (req, res, next) => {
     next();
   } catch (error) {
     console.log(error);
-    res.status(500).json({ success: false, error: "Server error" });
+    res.status(200).json({ success: false, error: "Server error" });
   }
 };
 
@@ -252,7 +252,7 @@ const checkUserExist = async (req, res, next) => {
     const userCheck = await doesUserExist(mobileNumber);
 
     if (!userCheck) {
-      return res.status(400).json({
+      return res.status(200).json({
         success: false,
         message: "User does not exists with this mobile number.",
       });
@@ -261,7 +261,7 @@ const checkUserExist = async (req, res, next) => {
     next();
   } catch (error) {
     console.log(error);
-    res.status(500).json({ success: false, error: "Server error" });
+    res.status(200).json({ success: false, error: "Server error" });
   }
 };
 

@@ -7,7 +7,7 @@ const updateAdminDetails = async (req, res) => {
 
   // check if the user is an admin
   if (role !== Roles.ADMIN) {
-    return res.status(400).json({
+    return res.status(200).json({
       success: false,
       message: "This role cannot update the admin",
     });
@@ -17,7 +17,7 @@ const updateAdminDetails = async (req, res) => {
 
   // check if the admin key is provided
   if (!adminKey) {
-    return res.status(400).json({
+    return res.status(200).json({
       success: false,
       message: "Admin key is required",
     });
@@ -42,7 +42,7 @@ const updateAdminDetails = async (req, res) => {
       user: updatedAdmin.toObject(),
     });
   } catch (error) {
-    res.status(500).json({
+    res.status(200).json({
       success: false,
       message: "Admin updation failed",
       error: error.message,
@@ -81,7 +81,7 @@ const updateUserDetails = async (req, res) => {
       { new: true }
     );
     if (!updatedUser) {
-      return res.status(400).json({
+      return res.status(200).json({
         success: false,
         message: "User does not exists with this id.",
       });
@@ -94,7 +94,7 @@ const updateUserDetails = async (req, res) => {
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ success: false, message: "Server error" });
+    res.status(200).json({ success: false, message: "Server error" });
   }
 };
 
@@ -118,7 +118,7 @@ const updateProducts = async (req, res) => {
       // if it does not exists then user cannot change the product
       if (!existsProduct) {
         return res
-          .status(400)
+          .status(200)
           .json({ success: false, message: "User cannot change this product" });
       }
     }
@@ -139,7 +139,7 @@ const updateProducts = async (req, res) => {
 
     // if product does not exists then return error
     if (!updatedProduct) {
-      return res.status(400).json({
+      return res.status(200).json({
         success: false,
         message: "Product does not exists with this id.",
       });
@@ -153,7 +153,7 @@ const updateProducts = async (req, res) => {
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ success: false, message: "Server error" });
+    res.status(200).json({ success: false, message: "Server error" });
   }
 };
 
@@ -162,7 +162,7 @@ const verifyUser = async (req, res) => {
 
   // check if the user is an admin
   if (role !== Roles.ADMIN) {
-    return res.status(400).json({
+    return res.status(200).json({
       success: false,
       message: "This role cannot verify the user",
     });
@@ -171,14 +171,14 @@ const verifyUser = async (req, res) => {
   const { id: userId } = req.body;
 
   if (!userId) {
-    return res.status(400).json({
+    return res.status(200).json({
       success: false,
       message: "User id is required",
     });
   }
 
   if (!adminKey) {
-    return res.status(400).json({
+    return res.status(200).json({
       success: false,
       message: "Admin key is required",
     });
@@ -190,7 +190,7 @@ const verifyUser = async (req, res) => {
     });
 
     if (!updatedAdmin) {
-      return res.status(400).json({
+      return res.status(200).json({
         success: false,
         message: "Admin does not exists with this id or admin key",
       });
@@ -204,7 +204,7 @@ const verifyUser = async (req, res) => {
 
     if (!user) {
       return res
-        .status(400)
+        .status(200)
         .json({ success: false, message: "User not found" });
     }
 
@@ -215,7 +215,7 @@ const verifyUser = async (req, res) => {
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ success: false, message: "Server error" });
+    res.status(200).json({ success: false, message: "Server error" });
   }
 };
 
