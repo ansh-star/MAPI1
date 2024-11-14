@@ -19,10 +19,25 @@ const searchProducts = async (req, res) => {
 
     const products = await Product.find(query).skip(skip).limit(limit).lean();
 
-    const total = await Product.countDocuments(query);
+    // get distinct uses and composition from the products
+    const uses = [...new Set(products?.map((product) => product?.Uses).flat())];
+    const composition = [
+      ...new Set(products?.map((product) => product?.Composition).flat()),
+    ];
+
+    const recommendedProducts = await Product.find({
+      $or: [
+        { Uses: { $in: uses } }, // Match any similar uses
+        { Composition: { $in: composition } }, // Match any similar composition
+      ],
+    })
+      .limit(limit)
+      .lean();
+
+    const total = recommendedProducts.length;
 
     // If no products match the search, return a status message and an empty array
-    if (products.length === 0) {
+    if (total === 0) {
       return res.status(200).json({
         success: false,
         message: "No products match your search",
@@ -36,7 +51,7 @@ const searchProducts = async (req, res) => {
     res.json({
       success: true,
       message: "Products matching your search retrieved successfully",
-      products,
+      products: recommendedProducts,
       total,
       page: parseInt(page),
       totalPages: Math.ceil(total / limit),

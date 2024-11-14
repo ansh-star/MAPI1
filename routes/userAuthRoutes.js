@@ -13,6 +13,7 @@ const { updateUserDetails } = require("../controllers/updateController");
 const { verifyToken } = require("../utils/tokenGenerator");
 const { deleteUserDetails } = require("../controllers/deleteController");
 const { sendOTP, verifyOTP } = require("../controllers/otpController");
+const { userDetails } = require("../controllers/getUserDetails");
 
 const router = express.Router();
 
@@ -32,6 +33,8 @@ router.post("/verify-otp", verifyOTP, loginUser);
 
 // Middleware to verify the token for subsequent routes
 router.use(verifyToken);
+
+router.get("/details", userDetails);
 
 // Route to update user details
 router.put("", updateUserDetails);

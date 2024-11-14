@@ -89,11 +89,16 @@ const loginAdmin = async (req, res) => {
 
     const token = generateToken({ _id: admin._id, role: Roles.ADMIN });
 
+    res.cookie("token", token, {
+      httpOnly: true, // Prevents client-side JavaScript from accessing the cookie
+      secure: true, // Ensures the cookie is sent only over HTTPS (set to true in production)
+      sameSite: "strict", // Helps protect against CSRF attacks
+    });
+
     res.status(201).json({
       success: true,
       message: "Login successful",
       user: admin.toObject(),
-      token,
     });
   } catch (error) {
     res

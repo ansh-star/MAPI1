@@ -108,7 +108,6 @@ const deleteProducts = async (req, res) => {
     res.status(200).json({ success: false, message: "Server error" });
   }
 };
-
 const deleteProductFromCart = async (req, res) => {
   const { productId } = req.body;
   const { id } = req.user;
@@ -133,7 +132,6 @@ const deleteProductFromCart = async (req, res) => {
       .json({ success: false, message: "Cannot delete product from cart" });
   }
 };
-
 module.exports = {
   deleteUserDetails,
   deleteAdminDetails,
