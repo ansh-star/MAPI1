@@ -5,7 +5,10 @@ const { addProduct } = require("../controllers/addController");
 const { updateProducts } = require("../controllers/updateController");
 const { deleteProducts } = require("../controllers/deleteController");
 const { getProducts } = require("../controllers/getProductController");
-const { searchProducts } = require("../controllers/searchController");
+const {
+  searchProducts,
+  recommendedProducts,
+} = require("../controllers/searchController");
 const router = express.Router();
 
 //verfiy token
@@ -16,6 +19,7 @@ router.get("", getProducts);
 
 router.get("/search", searchProducts);
 
+router.get("/recommend/:productId", recommendedProducts);
 //verify role of user
 router.use(verifyRole);
 

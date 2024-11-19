@@ -69,6 +69,37 @@ const searchProducts = async (req, res) => {
   }
 };
 
+const recommendedProducts = async (req, res) => {
+  try {
+    const { productId } = req.params;
+
+    // Find the target product to base recommendations on
+    const targetProduct = await Product.findById(productId);
+    if (!targetProduct)
+      return res
+        .status(200)
+        .json({ success: false, message: "Product not found" });
+
+    // Find similar products by matching uses and composition
+    const recommendedProducts = await Product.find({
+      _id: { $ne: productId },
+      $or: [
+        { Uses: { $in: [targetProduct.Uses] } }, // Match any similar uses
+        { Composition: { $in: [targetProduct.Composition] } }, // Match any similar composition
+      ],
+    });
+
+    // Send back the recommended products
+    res
+      .status(200)
+      .json({ recommendedProducts, product: targetProduct, success: true });
+  } catch (error) {
+    console.error(error);
+    res.status(200).json({ success: false, message: "Server Error" });
+  }
+};
+
 module.exports = {
   searchProducts,
+  recommendedProducts,
 };
