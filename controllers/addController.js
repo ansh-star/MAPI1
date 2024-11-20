@@ -69,13 +69,6 @@ const addProductToCart = async (req, res) => {
         .json({ success: false, message: "Quantity can't be negative" });
     }
 
-    if (quantity === 0) {
-      await deleteProductFromCart(req, res);
-      return res
-        .status(200)
-        .json({ success: true, message: "Product added to cart successfully" });
-    }
-
     const user = await User.findOne({ _id: id });
 
     if (!user) {
@@ -83,12 +76,16 @@ const addProductToCart = async (req, res) => {
         .status(200)
         .json({ success: false, message: "User not found" });
     }
-
-    const product = user.cart.find((item) => item.productId === productID);
-
+    console.log(user.cart);
+    const product = user.cart.find(
+      (item) => item.productId.toString() === productID
+    );
+    console.log(product);
     if (product) {
       if (quantity === 0) {
-        user.cart = user.cart.filter((item) => item.productId !== productID);
+        user.cart = user.cart.filter(
+          (item) => item.productId.toString() !== productID
+        );
       } else {
         product.quantity = quantity;
       }
