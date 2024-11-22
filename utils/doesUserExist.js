@@ -24,10 +24,7 @@ const doesUserExist = async (mobileNumber, role) => {
       return true;
     }
   } else {
-    if (
-      user &&
-      (user.role === Roles.RETAILER || user.role === Roles.DELIVERY_PARTNER)
-    ) {
+    if (user) {
       return true;
     }
   }

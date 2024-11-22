@@ -66,12 +66,7 @@ const loginUser = async (req, res) => {
         message: "Invalid mobile number or username.",
       });
     } else {
-      // Successful login, return user data (you might want to include a JWT token here for session management)
-      res.cookie("token", token, {
-        httpOnly: true, // Prevents client-side JavaScript from accessing the cookie
-        secure: true, // Ensures the cookie is sent only over HTTPS (set to true in production)
-        sameSite: "strict", // Helps protect against CSRF attacks
-      });
+      const token = generateToken(user);
 
       return res.status(200).json({
         success: true,
