@@ -1,4 +1,3 @@
-const dotenv = require("dotenv");
 const jwt = require("jsonwebtoken");
 const Roles = require("./roles");
 
@@ -26,7 +25,7 @@ const verifyToken = (req, res, next) => {
       .status(200)
       .json({ success: false, message: "Access denied. No token provided." });
   }
-
+  console.log(token);
   try {
     // Verify the token and attach the payload to the request object
     const decoded = jwt.verify(token, JWT_SECRET);
@@ -49,4 +48,16 @@ const verifyRole = (req, res, next) => {
   next();
 };
 
-module.exports = { generateToken, verifyToken, verifyRole };
+const verifyAdmin = async (req, res, next) => {
+  const { role } = req.user;
+
+  if (role === Roles.ADMIN) {
+    next();
+  } else {
+    return res
+      .status(200)
+      .json({ success: false, message: "This role cannot request this" });
+  }
+};
+
+module.exports = { generateToken, verifyToken, verifyRole, verifyAdmin };

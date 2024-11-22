@@ -1,16 +1,10 @@
-const Admin = require("../models/Admin");
 const Product = require("../models/Product");
 const User = require("../models/User");
 const Roles = require("../utils/roles");
 const deleteAdminDetails = async (req, res) => {
-  const { adminKey } = req.body;
   const { role, id } = req.user;
-  if (!adminKey) {
-    return res.status(200).json({
-      success: false,
-      message: "Please provide admin key",
-    });
-  }
+
+  // check if the user is an admin
   if (role !== Roles.ADMIN) {
     return res.status(200).json({
       success: false,
@@ -19,7 +13,7 @@ const deleteAdminDetails = async (req, res) => {
   }
   try {
     // Deleted a user
-    const deletedAdmin = await Admin.findOneAndDelete({ _id: id, adminKey });
+    const deletedAdmin = await User.findOneAndDelete({ _id: id });
 
     if (!deletedAdmin) {
       return res.status(200).json({

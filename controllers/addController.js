@@ -76,11 +76,11 @@ const addProductToCart = async (req, res) => {
         .status(200)
         .json({ success: false, message: "User not found" });
     }
-    console.log(user.cart);
+
     const product = user.cart.find(
       (item) => item.productId.toString() === productID
     );
-    console.log(product);
+
     if (product) {
       if (quantity === 0) {
         user.cart = user.cart.filter(

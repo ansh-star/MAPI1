@@ -1,4 +1,3 @@
-const Admin = require("../models/Admin");
 const Product = require("../models/Product");
 const User = require("../models/User");
 const Roles = require("../utils/roles");
@@ -15,16 +14,9 @@ const updateAdminDetails = async (req, res) => {
 
   const { username, location, adminKey } = req.body;
 
-  // check if the admin key is provided
-  if (!adminKey) {
-    return res.status(200).json({
-      success: false,
-      message: "Admin key is required",
-    });
-  }
   try {
-    const updatedAdmin = await Admin.findOneAndUpdate(
-      { _id: id, adminKey },
+    const updatedAdmin = await User.findOneAndUpdate(
+      { _id: id },
       { username, location },
       { new: true }
     ).select("-wholesalerRequests -productList");
@@ -177,17 +169,14 @@ const verifyUser = async (req, res) => {
     });
   }
 
-  if (!adminKey) {
-    return res.status(200).json({
-      success: false,
-      message: "Admin key is required",
-    });
-  }
   try {
     // check if the admin exists
-    const updatedAdmin = await Admin.updateMany({
-      $pull: { wholesalerRequests: userId },
-    });
+    const updatedAdmin = await User.updateMany(
+      { role: Roles.ADMIN },
+      {
+        $pull: { wholesalerRequests: userId },
+      }
+    );
 
     if (!updatedAdmin) {
       return res.status(200).json({

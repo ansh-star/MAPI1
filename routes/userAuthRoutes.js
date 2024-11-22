@@ -10,10 +10,13 @@ const {
   validateUserLoginBody,
 } = require("../controllers/authBodyChecker");
 const { updateUserDetails } = require("../controllers/updateController");
-const { verifyToken } = require("../utils/tokenGenerator");
+const { verifyToken, verifyAdmin } = require("../utils/tokenGenerator");
 const { deleteUserDetails } = require("../controllers/deleteController");
 const { sendOTP, verifyOTP } = require("../controllers/otpController");
-const { userDetails } = require("../controllers/getUserDetails");
+const {
+  userDetails,
+  getWholesalerRequest,
+} = require("../controllers/getUserDetails");
 
 const router = express.Router();
 
@@ -34,6 +37,7 @@ router.post("/verify-otp", verifyOTP, loginUser);
 // Middleware to verify the token for subsequent routes
 router.use(verifyToken);
 
+// get user details
 router.get("/details", userDetails);
 
 // Route to update user details
@@ -41,6 +45,9 @@ router.put("", updateUserDetails);
 
 // Route to delete user details
 router.delete("", deleteUserDetails);
+
+// get wholesaler requests
+router.get("/wholesaler", verifyAdmin, getWholesalerRequest);
 
 // Route for user logout
 router.post("/logout", (req, res) => {

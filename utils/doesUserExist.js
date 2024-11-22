@@ -1,25 +1,38 @@
-const { default: mongoose } = require("mongoose");
-const Admin = require("../models/Admin");
 const User = require("../models/User");
+const Roles = require("./roles");
 
-const checkSchema = (mobileNumber, mongoSchema) => {
-  return mongoSchema
-    .findOne({ mobileNumber })
-    .then((user) => {
-      if (user) {
-        return true;
-      }
-      return false;
-    })
-    .catch((err) => {
-      throw err;
-    });
+const checkSchema = async (mobileNumber) => {
+  const obj = await User.findOne({ mobileNumber });
+
+  if (obj) return obj.toObject();
+  return undefined;
 };
-const doesAdminExist = (mobileNumber) => {
-  return checkSchema(mobileNumber, Admin);
+const doesAdminExist = async (mobileNumber) => {
+  const admin = await checkSchema(mobileNumber);
+  if (
+    admin &&
+    (admin.role === Roles.ADMIN || admin.role === Roles.WHOLESALER)
+  ) {
+    return true;
+  }
+  return false;
 };
-const doesUserExist = (mobileNumber) => {
-  return checkSchema(mobileNumber, User);
+const doesUserExist = async (mobileNumber, role) => {
+  const user = await checkSchema(mobileNumber, User);
+  if (role) {
+    if (user && (user.role === Roles.ADMIN || user.role === Roles.WHOLESALER)) {
+      return true;
+    }
+  } else {
+    if (
+      user &&
+      (user.role === Roles.RETAILER || user.role === Roles.DELIVERY_PARTNER)
+    ) {
+      return true;
+    }
+  }
+
+  return false;
 };
 
 module.exports = { doesAdminExist, doesUserExist };

@@ -1,8 +1,4 @@
 const axios = require("axios");
-const Admin = require("../models/Admin");
-const { generateToken } = require("../utils/tokenGenerator"); // Assume token generation function is available
-const User = require("../models/User");
-const Roles = require("../utils/roles");
 
 // Function to send OTP
 const sendOTP = async (req, res) => {

@@ -1,26 +1,8 @@
 const { validationResult } = require("express-validator");
-const Admin = require("../models/Admin");
 const User = require("../models/User"); // Import your User model
 const { doesAdminExist, doesUserExist } = require("../utils/doesUserExist");
 const Roles = require("../utils/roles");
 const { generateToken } = require("../utils/tokenGenerator");
-
-// Function to handle Admin signup
-const signupAdmin = async (req, res, next) => {
-  const { username, mobileNumber, location, adminKey } = req.body;
-  try {
-    const admin = new Admin({ username, mobileNumber, location, adminKey });
-    await admin.save();
-
-    next();
-  } catch (error) {
-    res.status(200).json({
-      success: false,
-      message: "Admin registration failed",
-      error: error.message,
-    });
-  }
-};
 
 // Signup function for user
 const signupUser = async (req, res, next) => {
@@ -57,7 +39,10 @@ const signupUser = async (req, res, next) => {
     await newUser.save();
 
     if (role === Roles.WHOLESALER) {
-      await Admin.updateMany({ $push: { wholesalerRequests: newUser._id } });
+      await User.updateMany(
+        { role: Roles.ADMIN },
+        { $push: { wholesalerRequests: newUser._id } }
+      );
     }
 
     next();
@@ -67,58 +52,13 @@ const signupUser = async (req, res, next) => {
   }
 };
 
-// Function to handle Admin login
-const loginAdmin = async (req, res) => {
-  const { mobileNumber, adminKey } = req.body;
-
-  try {
-    // paging in product list
-    const admin = await Admin.findOne({ mobileNumber, adminKey })
-      .populate({
-        path: "wholesalerRequests", // Path to populate
-        match: { role: Roles.WHOLESALER, user_verified: false }, // Condition: Only fetch users with role: 1 (wholesalers) and user_verified: false
-        options: { limit: 50 },
-      })
-      .populate({ path: "productList", option: { limit: 50 } });
-
-    if (!admin) {
-      return res
-        .status(200)
-        .json({ success: false, message: "Invalid credentials" });
-    }
-
-    const token = generateToken({ _id: admin._id, role: Roles.ADMIN });
-
-    res.cookie("token", token, {
-      httpOnly: true, // Prevents client-side JavaScript from accessing the cookie
-      secure: true, // Ensures the cookie is sent only over HTTPS (set to true in production)
-      sameSite: "strict", // Helps protect against CSRF attacks
-    });
-
-    res.status(201).json({
-      success: true,
-      message: "Login successful",
-      user: admin.toObject(),
-    });
-  } catch (error) {
-    res
-      .status(200)
-      .json({ success: false, message: "Login failed", error: error.message });
-  }
-};
-
 // Login function for User
 const loginUser = async (req, res) => {
   const { mobileNumber } = req.body;
 
   try {
     // Check if the user exists by mobile number and username
-    const user = await User.findOne({ mobileNumber })
-      .populate({ path: "products", option: { limit: 50 } })
-      .populate({
-        path: "cart.productId", // Populates the 'productId' inside 'cart'
-        options: { limit: 50 },
-      });
+    const user = await User.findOne({ mobileNumber });
 
     if (!user) {
       return res.status(200).json({
@@ -127,6 +67,12 @@ const loginUser = async (req, res) => {
       });
     } else {
       // Successful login, return user data (you might want to include a JWT token here for session management)
+      res.cookie("token", token, {
+        httpOnly: true, // Prevents client-side JavaScript from accessing the cookie
+        secure: true, // Ensures the cookie is sent only over HTTPS (set to true in production)
+        sameSite: "strict", // Helps protect against CSRF attacks
+      });
+
       return res.status(200).json({
         success: true,
         message: "Login successful!",
@@ -137,60 +83,6 @@ const loginUser = async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(200).json({ success: false, message: "Server error" });
-  }
-};
-
-const checkAdminNotExist = async (req, res, next) => {
-  try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(200).json({ success: false, errors: errors.array() });
-    }
-
-    // Check if any of the unique fields already exist
-    const { mobileNumber, adminKey } = req.body;
-
-    const existingAdmin = await Admin.findOne({
-      $or: [{ mobileNumber }, { adminKey }],
-    });
-
-    // If an existing admin is found, determine which field conflicts
-    if (existingAdmin) {
-      if (existingAdmin.mobileNumber === mobileNumber) {
-        return res
-          .status(200)
-          .json({ success: false, error: "Mobile Number already exists" });
-      }
-      if (existingAdmin.adminKey === adminKey) {
-        return res
-          .status(200)
-          .json({ success: false, error: "Admin Key already exists" });
-      }
-    }
-
-    next();
-  } catch (error) {
-    console.log(error);
-    res.status(200).json({ success: false, error: "Server error" });
-  }
-};
-
-const checkAdminExist = async (req, res, next) => {
-  try {
-    const { mobileNumber } = req.body;
-
-    const adminExist = await doesAdminExist(mobileNumber);
-
-    if (!adminExist) {
-      return res.status(200).json({
-        success: false,
-        message: "Admin does not exists with this mobile number.",
-      });
-    }
-
-    next();
-  } catch (error) {
-    res.status(200).json({ success: false, error: "Server error" });
   }
 };
 
@@ -261,9 +153,9 @@ const checkUserExist = async (req, res, next) => {
       });
     }
 
-    const { mobileNumber } = req.body;
+    const { mobileNumber, role } = req.body;
 
-    const userCheck = await doesUserExist(mobileNumber);
+    const userCheck = await doesUserExist(mobileNumber, role);
 
     if (!userCheck) {
       return res.status(200).json({
@@ -280,12 +172,8 @@ const checkUserExist = async (req, res, next) => {
 };
 
 module.exports = {
-  signupAdmin,
   signupUser,
-  loginAdmin,
   loginUser,
-  checkAdminNotExist,
-  checkAdminExist,
   checkUserNotExist,
   checkUserExist,
 };
