@@ -1,4 +1,3 @@
-const Admin = require("../models/Admin");
 const Product = require("../models/Product");
 const User = require("../models/User");
 const Roles = require("../utils/roles");
@@ -11,57 +10,35 @@ const getProducts = async (req, res) => {
   const { pageNumber, limit } = req.query;
   try {
     // Check if the user role is ADMIN
-    if (role === Roles.ADMIN) {
-      // Fetch the admin
-      const admin = await Admin.findOne({ _id: userid });
+    if (role !== Roles.WHOLESALER) {
+      const totalDocuments = await Product.countDocuments({});
+      const randomSkip = Math.floor(Math.random() * (totalDocuments - 1000)); // Skip a random number of documents before selecting 1000 consecutive
 
-      // If the admin is not found, return an error
-      if (!admin) {
-        return res
-          .status(200)
-          .json({ success: false, message: "Admin not found" });
-      }
-
-      // Step 1: Shuffle all products with a large sample size (here, 100).
       const products = await Product.aggregate([
-        { $sample: { size: parseInt(limit) } }, // Randomly sample 'limit' number of products
+        { $skip: randomSkip },
+        { $limit: 1000 },
+        { $sample: { size: 100 } },
       ]);
 
       // Respond with the products found
       return res.status(200).json({ success: true, products });
     }
-    // Check if the user role is WHOLESALER
-    const user = await User.findOne({ _id: userid });
-
+    // Fetch user and their products with pagination for WHOLESALER
+    const user = await User.findOne({ _id: userid }).populate({
+      path: "products", // Specify the path to populate
+      options: {
+        limit: parseInt(limit),
+        skip: ((parseInt(pageNumber) || 1) - 1) * 10,
+      },
+    });
+    // If the user is not found, return an error
     if (!user) {
       return res
         .status(200)
         .json({ success: false, message: "User not found" });
     }
-
-    if (role === Roles.WHOLESALER) {
-      // Fetch user and their products with pagination for WHOLESALER
-      const products = await User.findOne({ _id: userid }).populate({
-        path: "products", // Specify the path to populate
-        options: {
-          limit: parseInt(limit),
-          skip: ((parseInt(pageNumber) || 1) - 1) * 10,
-        },
-      });
-      // If the user is not found, return an error
-      if (!products) {
-        return res
-          .status(200)
-          .json({ success: false, message: "User not found" });
-      }
-      // Respond with the user and their products
-      return res.status(200).json({ success: true, products });
-    } else {
-      const products = await Product.aggregate([
-        { $sample: { size: parseInt(limit) } }, // Randomly sample 'limit' number of products
-      ]);
-      return res.status(200).json({ success: true, products });
-    }
+    // Respond with the user and their products
+    return res.status(200).json({ success: true, products: user.products });
   } catch (error) {
     console.error(error.message);
     return res.status(200).json({ success: false, message: error.message });
