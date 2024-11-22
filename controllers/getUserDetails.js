@@ -29,7 +29,7 @@ const getCart = async (req, res) => {
       .populate("cart.productId");
     if (!user) {
       return res
-        .status(404)
+        .status(200)
         .json({ success: false, message: "User not found" });
     }
     if (user.cart?.length === 0) {
