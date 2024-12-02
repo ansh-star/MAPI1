@@ -9,7 +9,10 @@ const {
   validateUserSignupBody,
   validateUserLoginBody,
 } = require("../controllers/authBodyChecker");
-const { updateUserDetails } = require("../controllers/updateController");
+const {
+  updateUserDetails,
+  verifyUser,
+} = require("../controllers/updateController");
 const { verifyToken, verifyAdmin } = require("../utils/tokenGenerator");
 const { deleteUserDetails } = require("../controllers/deleteController");
 const { sendOTP, verifyOTP } = require("../controllers/otpController");
@@ -48,6 +51,8 @@ router.delete("", deleteUserDetails);
 
 // get wholesaler requests
 router.get("/wholesaler", verifyAdmin, getWholesalerRequest);
+
+router.put("/verify-user", verifyAdmin, verifyUser);
 
 // Route for user logout
 router.post("/logout", (req, res) => {

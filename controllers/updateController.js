@@ -172,7 +172,7 @@ const verifyUser = async (req, res) => {
   try {
     // check if the admin exists
     const updatedAdmin = await User.updateMany(
-      { role: Roles.ADMIN },
+      { _id: adminId },
       {
         $pull: { wholesalerRequests: userId },
       }

@@ -49,17 +49,17 @@ const getCart = async (req, res) => {
 
 const getWholesalerRequest = async (req, res) => {
   const { id } = req.user;
-  const { limit, pageNumber } = req.query;
+  const { limit, pageNumber = 1 } = req.query;
   try {
     const user = await User.aggregate([
-      { $match: { _id: id } }, // Match the user by ID
+      { $match: { _id: new mongoose.Types.ObjectId(String(id)) } }, // Match the user by ID
       {
         $project: {
           wholesalerRequests: {
             $slice: [
               "$wholesalerRequests",
-              (parseInt(pageNumber) - 1) * 10,
-              parseInt(limit),
+              parseInt(pageNumber) - 1, // Starting index
+              parseInt(limit) || 10, // Number of items to fetch (default 10)
             ],
           },
         },
@@ -72,18 +72,35 @@ const getWholesalerRequest = async (req, res) => {
           as: "wholesalerRequests",
         },
       },
+      {
+        $project: {
+          wholesalerRequests: {
+            $map: {
+              input: "$wholesalerRequests",
+              as: "request",
+              in: {
+                _id: "$$request._id",
+                shopOrHospitalName: "$$request.shopOrHospitalName",
+                dealershipLicenseNumber: "$$request.dealershipLicenseNumber",
+              },
+            },
+          },
+        },
+      },
     ]);
 
     if (!user) {
       return res
-        .status(404)
+        .status(200)
         .json({ success: false, message: "User not found" });
     }
 
-    res.status(200).json({ success: true, wholesalerRequests: user });
+    res
+      .status(200)
+      .json({ success: true, wholesalerRequests: user[0].wholesalerRequests });
   } catch (error) {
     console.error(error);
-    res.status(500).json({
+    res.status(200).json({
       success: false,
       message: "Error occurred while fetching wholesaler requests",
     });
