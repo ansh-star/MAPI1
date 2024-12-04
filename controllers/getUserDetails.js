@@ -1,5 +1,6 @@
 const { default: mongoose } = require("mongoose");
 const User = require("../models/User");
+const Product = require("../models/Product");
 
 const userDetails = async (req, res) => {
   try {
@@ -23,10 +24,29 @@ const userDetails = async (req, res) => {
 
 const getCart = async (req, res) => {
   const { id } = req.user;
+  const { limit = 10 } = req.query;
   try {
     const user = await User.findById(id)
       .select("cart")
       .populate("cart.productId");
+    const uses = [
+      ...new Set(user.cart?.map((product) => product.productId?.Uses).flat()),
+    ];
+    const composition = [
+      ...new Set(
+        user.cart?.map((product) => product.productId?.Composition).flat()
+      ),
+    ];
+
+    const recommendedProducts = await Product.find({
+      $or: [
+        { Uses: { $in: uses } }, // Match any similar uses
+        { Composition: { $in: composition } }, // Match any similar composition
+      ],
+    })
+      .limit(limit)
+      .lean();
+
     if (!user) {
       return res
         .status(200)
@@ -37,7 +57,9 @@ const getCart = async (req, res) => {
         .status(200)
         .json({ success: false, message: "Cart is empty", cart: [] });
     }
-    return res.status(200).json({ success: true, cart: user.cart });
+    return res
+      .status(200)
+      .json({ success: true, cart: user.cart, recommendedProducts });
   } catch (error) {
     console.error(error);
     res.status(200).json({
@@ -82,6 +104,7 @@ const getWholesalerRequest = async (req, res) => {
                 _id: "$$request._id",
                 shopOrHospitalName: "$$request.shopOrHospitalName",
                 dealershipLicenseNumber: "$$request.dealershipLicenseNumber",
+                delaershipLicenseImage: "$$request.dealershipLicenseImage",
               },
             },
           },
