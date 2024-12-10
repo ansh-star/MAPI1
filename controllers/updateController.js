@@ -1,3 +1,4 @@
+const { default: mongoose } = require("mongoose");
 const Product = require("../models/Product");
 const User = require("../models/User");
 const Roles = require("../utils/roles");
@@ -99,6 +100,7 @@ const updateProducts = async (req, res) => {
     side_effects,
     image_url,
     manufacturer,
+    mrp,
   } = req.body;
   const { id: userId, role } = req.user;
   try {
@@ -114,10 +116,10 @@ const updateProducts = async (req, res) => {
           .json({ success: false, message: "User cannot change this product" });
       }
     }
-
+    console.log("id", id);
     // update the product
     const updatedProduct = await Product.findOneAndUpdate(
-      { _id: id },
+      { _id: new mongoose.Types.ObjectId(id) },
       {
         Medicine_Name: medicine_name,
         Composition: composition,
@@ -125,6 +127,7 @@ const updateProducts = async (req, res) => {
         Side_effects: side_effects,
         Image_URL: image_url,
         Manufacturer: manufacturer,
+        mrp: mrp,
       },
       { new: true }
     );

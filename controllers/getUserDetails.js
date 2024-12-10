@@ -8,7 +8,7 @@ const userDetails = async (req, res) => {
 
     if (!user) {
       return res
-        .status(404)
+        .status(200)
         .json({ success: false, message: "User not found" });
     }
 
@@ -29,6 +29,7 @@ const getCart = async (req, res) => {
     const user = await User.findById(id)
       .select("cart")
       .populate("cart.productId");
+
     const uses = [
       ...new Set(user.cart?.map((product) => product.productId?.Uses).flat()),
     ];

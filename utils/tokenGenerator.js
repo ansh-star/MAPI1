@@ -25,7 +25,7 @@ const verifyToken = (req, res, next) => {
       .status(200)
       .json({ success: false, message: "Access denied. No token provided." });
   }
-  console.log(token);
+
   try {
     // Verify the token and attach the payload to the request object
     const decoded = jwt.verify(token, JWT_SECRET);

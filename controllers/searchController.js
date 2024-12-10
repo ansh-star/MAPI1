@@ -3,28 +3,34 @@ const Product = require("../models/Product");
 const searchProducts = async (req, res) => {
   const { search, page = 1, limit = 50 } = req.query;
 
-  // Build a dynamic query object with an OR condition to match any of the fields
-  const query = {};
-
+  let query = {};
   if (search) {
-    query.$or = [
-      { Medicine_Name: new RegExp(search, "i") }, // Matches medicine name containing search
-      { Manufacturer: new RegExp(search, "i") }, // Matches manufacturer name containing search
-      { Composition: new RegExp(search, "i") }, // Matches composition containing search
-    ];
+    query = { $text: { $search: search } }; // Use text search with the indexed fields
   }
 
   try {
     const skip = (page - 1) * limit;
 
-    const products = await Product.find(query).skip(skip).limit(limit).lean();
+    // Execute the search and aggregation in parallel
+    const [products, usesAndComposition] = await Promise.all([
+      Product.find(query).skip(skip).limit(limit).lean(),
+      Product.aggregate([
+        { $match: query }, // Match the search query
+        {
+          $group: {
+            _id: null,
+            distinctUses: { $addToSet: "$Uses" },
+            distinctComposition: { $addToSet: "$Composition" },
+          },
+        },
+      ]),
+    ]);
 
-    // get distinct uses and composition from the products
-    const uses = [...new Set(products?.map((product) => product?.Uses).flat())];
-    const composition = [
-      ...new Set(products?.map((product) => product?.Composition).flat()),
-    ];
+    // Extract distinct uses and composition
+    const uses = usesAndComposition[0]?.distinctUses || [];
+    const composition = usesAndComposition[0]?.distinctComposition || [];
 
+    // Find recommended products
     const recommendedProducts = await Product.find({
       $or: [
         { Uses: { $in: uses } }, // Match any similar uses
@@ -37,31 +43,35 @@ const searchProducts = async (req, res) => {
     const total = recommendedProducts.length;
 
     // If no products match the search, return a status message and an empty array
-    if (total === 0) {
+    if (products.length === 0 && total === 0) {
       return res.status(200).json({
         success: false,
         message: "No products match your search",
         products: [],
+        recommendedProducts: [],
         total: 0,
         page: parseInt(page),
         totalPages: 0,
       });
     }
 
+    // Return the search results
     res.json({
       success: true,
       message: "Products matching your search retrieved successfully",
-      products: recommendedProducts,
+      products,
+      recommendedProducts,
       total,
       page: parseInt(page),
       totalPages: Math.ceil(total / limit),
     });
   } catch (error) {
     console.error("Error fetching products:", error);
-    res.status(500).json({
+    res.status(200).json({
       success: false,
       message: "Server Error",
       products: [],
+      recommendedProducts: [],
       total: 0,
       page: 1,
       totalPages: 0,
@@ -72,30 +82,52 @@ const searchProducts = async (req, res) => {
 const recommendedProducts = async (req, res) => {
   try {
     const { productId } = req.params;
+    const { limit = 10 } = req.query;
 
-    // Find the target product to base recommendations on
-    const targetProduct = await Product.findById(productId);
+    // Use projection to fetch only necessary fields
+    const targetProduct = await Product.findById(productId).lean();
     if (!targetProduct)
       return res
         .status(200)
         .json({ success: false, message: "Product not found" });
 
-    // Find similar products by matching uses and composition
+    // Dynamically build the $or condition based on available data
+    const orConditions = [];
+    if (targetProduct.Uses?.length) {
+      orConditions.push({ Uses: { $in: targetProduct.Uses } }); // Use the index on 'Uses'
+    }
+    if (targetProduct.Composition?.length) {
+      orConditions.push({ Composition: { $in: targetProduct.Composition } }); // Use the index on 'Composition'
+    }
+
+    // Skip querying if no conditions are present
+    if (orConditions.length === 0) {
+      return res.status(200).json({
+        success: true,
+        message: "No recommendations found",
+        recommendedProducts: [],
+        product: targetProduct,
+      });
+    }
+
+    // Query for recommended products
     const recommendedProducts = await Product.find({
       _id: { $ne: productId },
-      $or: [
-        { Uses: { $in: [targetProduct.Uses] } }, // Match any similar uses
-        { Composition: { $in: [targetProduct.Composition] } }, // Match any similar composition
-      ],
-    });
+      $or: orConditions,
+    })
+      .limit(parseInt(limit))
+      .lean();
 
-    // Send back the recommended products
-    res
-      .status(200)
-      .json({ recommendedProducts, product: targetProduct, success: true });
+    // Return the response
+    res.status(200).json({
+      success: true,
+      message: "Recommended products retrieved successfully",
+      recommendedProducts,
+      product: targetProduct,
+    });
   } catch (error) {
-    console.error(error);
-    res.status(200).json({ success: false, message: "Server Error" });
+    console.error("Error fetching recommended products:", error);
+    res.status(500).json({ success: false, message: "Server Error" });
   }
 };
 

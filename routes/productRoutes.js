@@ -17,9 +17,12 @@ router.use(verifyToken);
 // get products according to pageNumber and limit
 router.get("", getProducts);
 
+// search products and get recommended products
 router.get("/search", searchProducts);
 
+// get recommended products
 router.get("/recommend/:productId", recommendedProducts);
+
 //verify role of user
 router.use(verifyRole);
 
