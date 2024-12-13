@@ -41,7 +41,8 @@ const productSchema = new mongoose.Schema({
   Expiry_Date: { type: Date },
   min_quantity: { type: Number },
   scheme_quantity: { type: Number },
-  Free_quantity: { type: Number },
+  free_quantity: { type: Number },
+  total_stock: { type: Number },
 });
 
 const Product = mongoose.model("Product", productSchema);

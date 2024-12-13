@@ -11,7 +11,7 @@ const getProducts = async (req, res) => {
   try {
     // Check if the user role is ADMIN
     if (role !== Roles.WHOLESALER) {
-      const totalDocuments = await Product.countDocuments({});
+      const totalDocuments = await Product.estimatedDocumentCount({});
       const randomSkip = Math.floor(Math.random() * (totalDocuments - 1000)); // Skip a random number of documents before selecting 1000 consecutive
 
       const products = await Product.aggregate([
@@ -21,7 +21,7 @@ const getProducts = async (req, res) => {
       ]);
 
       // Respond with the products found
-      return res.status(200).json({ success: true, products });
+      return res.status(200).json({ success: true, products, totalDocuments });
     }
     // Fetch user and their products with pagination for WHOLESALER
     const user = await User.findOne({ _id: userid }).populate({

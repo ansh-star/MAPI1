@@ -58,9 +58,18 @@ const getCart = async (req, res) => {
         .status(200)
         .json({ success: false, message: "Cart is empty", cart: [] });
     }
+    const totalAmount = user.cart.reduce(
+      (amount, item) => amount + item.quantity * item.productId.mrp,
+      0
+    );
     return res
       .status(200)
-      .json({ success: true, cart: user.cart, recommendedProducts });
+      .json({
+        success: true,
+        cart: user.cart,
+        recommendedProducts,
+        totalAmount,
+      });
   } catch (error) {
     console.error(error);
     res.status(200).json({
