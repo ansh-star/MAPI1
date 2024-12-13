@@ -47,7 +47,7 @@ router.get("/details", userDetails);
 router.put("", updateUserDetails);
 
 // Route to delete user details
-router.delete("", deleteUserDetails);
+router.delete("/:userId", verifyAdmin, deleteUserDetails);
 
 // get wholesaler requests
 router.get("/wholesaler", verifyAdmin, getWholesalerRequest);

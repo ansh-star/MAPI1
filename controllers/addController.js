@@ -7,24 +7,10 @@ const { deleteProductFromCart } = require("./deleteController");
 const addProduct = async (req, res) => {
   const { id, role } = req.user;
 
-  const {
-    Medicine_Name,
-    Composition,
-    Uses,
-    Side_effects,
-    Image_URL,
-    Manufacturer,
-  } = req.body;
-
   try {
     // Create a new product
     const newProduct = new Product({
-      Medicine_Name,
-      Composition,
-      Uses,
-      Side_effects,
-      Manufacturer,
-      Image_URL,
+      ...req.body,
     });
 
     // Save the product to MongoDB

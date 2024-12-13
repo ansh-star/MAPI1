@@ -4,7 +4,10 @@ const { productValidator } = require("../controllers/productChecker");
 const { addProduct } = require("../controllers/addController");
 const { updateProducts } = require("../controllers/updateController");
 const { deleteProducts } = require("../controllers/deleteController");
-const { getProducts } = require("../controllers/getProductController");
+const {
+  getProducts,
+  getProduct,
+} = require("../controllers/getProductController");
 const {
   searchProducts,
   recommendedProducts,
@@ -23,6 +26,9 @@ router.get("/search", searchProducts);
 // get recommended products
 router.get("/recommend/:productId", recommendedProducts);
 
+//get product by productId
+router.get("/:productId", getProduct);
+
 //verify role of user
 router.use(verifyRole);
 
@@ -33,6 +39,6 @@ router.post("", productValidator, addProduct);
 router.put("", updateProducts);
 
 // delete product
-router.delete("", deleteProducts);
+router.delete("/:productId", deleteProducts);
 
 module.exports = router;

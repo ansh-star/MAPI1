@@ -45,4 +45,20 @@ const getProducts = async (req, res) => {
   }
 };
 
-module.exports = { getProducts };
+const getProduct = async (req, res) => {
+  const { productId } = req.params;
+  try {
+    const product = await Product.findById(productId).lean();
+    if (!product) {
+      return res
+        .status(200)
+        .json({ success: false, message: "Product not found" });
+    }
+    return res.status(200).json({ success: true, product });
+  } catch (error) {
+    console.error(error.message);
+    return res.status(200).json({ success: false, message: error.message });
+  }
+};
+
+module.exports = { getProducts, getProduct };

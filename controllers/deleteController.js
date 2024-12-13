@@ -34,9 +34,10 @@ const deleteAdminDetails = async (req, res) => {
 };
 
 const deleteUserDetails = async (req, res) => {
+  const { userId } = req.params;
   try {
     // Delete a user
-    const existingUser = await User.findOneAndDelete({ _id: req.user.id });
+    const existingUser = await User.findOneAndDelete({ _id: userId });
     if (!existingUser) {
       return res.status(200).json({
         success: false,
@@ -57,7 +58,7 @@ const deleteUserDetails = async (req, res) => {
 
 const deleteProducts = async (req, res) => {
   const { id: userId, role } = req.user;
-  const { id: productId } = req.body;
+  const { productId } = req.params;
   try {
     // check if the user is a wholesaler
     if (role === Roles.WHOLESALER) {

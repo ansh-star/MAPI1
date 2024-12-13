@@ -9,7 +9,7 @@ const userSchema = new mongoose.Schema({
   location: { type: String, required: true },
   email: { type: String },
   dealershipLicenseNumber: { type: String }, // For Wholeseller and Retailer
-  dealershipLicenseImage: { type: String }, // For Wholeseller and Retailer
+  dealershipLicenseImage: { type: [String] }, // For Wholeseller and Retailer
 
   // Products for Wholeseller and Retailer
   products: [

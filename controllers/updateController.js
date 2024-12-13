@@ -92,16 +92,7 @@ const updateUserDetails = async (req, res) => {
 };
 
 const updateProducts = async (req, res) => {
-  const {
-    id,
-    medicine_name,
-    composition,
-    uses,
-    side_effects,
-    image_url,
-    manufacturer,
-    mrp,
-  } = req.body;
+  const { _id: id } = req.body;
   const { id: userId, role } = req.user;
   try {
     // check if the user is a wholesaler
@@ -116,19 +107,10 @@ const updateProducts = async (req, res) => {
           .json({ success: false, message: "User cannot change this product" });
       }
     }
-    console.log("id", id);
     // update the product
     const updatedProduct = await Product.findOneAndUpdate(
       { _id: new mongoose.Types.ObjectId(id) },
-      {
-        Medicine_Name: medicine_name,
-        Composition: composition,
-        Uses: uses,
-        Side_effects: side_effects,
-        Image_URL: image_url,
-        Manufacturer: manufacturer,
-        mrp: mrp,
-      },
+      req.body,
       { new: true }
     );
 
@@ -155,15 +137,7 @@ const updateProducts = async (req, res) => {
 const verifyUser = async (req, res) => {
   const { id: adminId, role } = req.user;
 
-  // check if the user is an admin
-  if (role !== Roles.ADMIN) {
-    return res.status(200).json({
-      success: false,
-      message: "This role cannot verify the user",
-    });
-  }
-
-  const { id: userId } = req.body;
+  const { userId } = req.body;
 
   if (!userId) {
     return res.status(200).json({
@@ -175,7 +149,7 @@ const verifyUser = async (req, res) => {
   try {
     // check if the admin exists
     const updatedAdmin = await User.updateMany(
-      { _id: adminId },
+      { _id: new mongoose.Types.ObjectId(adminId) },
       {
         $pull: { wholesalerRequests: userId },
       }

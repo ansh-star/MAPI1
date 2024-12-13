@@ -1,7 +1,7 @@
 const { default: mongoose } = require("mongoose");
 
 const productSchema = new mongoose.Schema({
-  Product_id: { type: String, required: true },
+  Product_id: { type: String },
   Medicine_Name: { type: String, required: true },
   Manufacturer: { type: String },
   Composition: { type: String },
@@ -37,6 +37,11 @@ const productSchema = new mongoose.Schema({
   Marketer_details: { type: String },
   Reference: { type: String },
   Image_URLS: { type: [String] },
+  location: { type: String },
+  Expiry_Date: { type: Date },
+  min_quantity: { type: Number },
+  scheme_quantity: { type: Number },
+  Free_quantity: { type: Number },
 });
 
 const Product = mongoose.model("Product", productSchema);
