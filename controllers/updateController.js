@@ -185,9 +185,38 @@ const verifyUser = async (req, res) => {
   }
 };
 
+const addProductWholesaler = async (req, res) => {
+  const { id: userid, role } = req.user;
+  const { productId } = req.params;
+  try {
+    const check = await User.findOne({ _id: userid, products: productId });
+    if (check === null) {
+      const response = await User.findByIdAndUpdate(
+        userid,
+        {
+          $push: { products: productId },
+        },
+        { new: true }
+      );
+      if (response) {
+        return res
+          .status(200)
+          .json({ success: true, message: "Product added to wholesaler" });
+      }
+    }
+    return res
+      .status(200)
+      .json({ success: false, message: "Product not added to wholesaler" });
+  } catch (error) {
+    console.log(error);
+    res.status(200).json({ success: false, message: "Server error" });
+  }
+};
+
 module.exports = {
   updateUserDetails,
   updateAdminDetails,
   updateProducts,
   verifyUser,
+  addProductWholesaler,
 };

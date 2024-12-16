@@ -2,11 +2,18 @@ const express = require("express");
 const { verifyToken, verifyRole } = require("../utils/tokenGenerator");
 const { productValidator } = require("../controllers/productChecker");
 const { addProduct } = require("../controllers/addController");
-const { updateProducts } = require("../controllers/updateController");
-const { deleteProducts } = require("../controllers/deleteController");
+const {
+  updateProducts,
+  addProductWholesaler,
+} = require("../controllers/updateController");
+const {
+  deleteProducts,
+  deleteWholesalerProduct,
+} = require("../controllers/deleteController");
 const {
   getProducts,
   getProduct,
+  getMyProducts,
 } = require("../controllers/getProductController");
 const {
   searchProducts,
@@ -27,10 +34,20 @@ router.get("/search", searchProducts);
 router.get("/recommend/:productId", recommendedProducts);
 
 //get product by productId
+router.get("/my", getMyProducts);
+
 router.get("/:productId", getProduct);
+
+// delete product from list of wholesaler
+router.delete("/:productId/my", deleteWholesalerProduct);
+
+// add products to list
+router.put("/:productId/add", addProductWholesaler);
 
 //verify role of user
 router.use(verifyRole);
+
+// get wholesaler products
 
 // add product and validate the body
 router.post("", productValidator, addProduct);

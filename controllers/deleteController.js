@@ -127,9 +127,34 @@ const deleteProductFromCart = async (req, res) => {
       .json({ success: false, message: "Cannot delete product from cart" });
   }
 };
+const deleteWholesalerProduct = async (req, res) => {
+  const { productId } = req.params;
+  const { id } = req.user;
+  try {
+    const user = await User.findOneAndUpdate(
+      { _id: id },
+      { $pull: { products: productId } }
+    );
+    return res
+      .status(200)
+      .json({
+        success: true,
+        message: "Product deleted from wholesaler list successfully",
+      });
+  } catch (error) {
+    console.log(error);
+    return res
+      .status(200)
+      .json({
+        success: false,
+        message: "Cannot delete product from wholesaler list",
+      });
+  }
+};
 module.exports = {
   deleteUserDetails,
   deleteAdminDetails,
   deleteProducts,
   deleteProductFromCart,
+  deleteWholesalerProduct,
 };
