@@ -1,14 +1,16 @@
 const { validationResult } = require("express-validator");
 const User = require("../models/User"); // Import your User model
-const { doesAdminExist, doesUserExist } = require("../utils/doesUserExist");
+const { doesUserExist } = require("../utils/doesUserExist");
 const Roles = require("../utils/roles");
 const { generateToken } = require("../utils/tokenGenerator");
+const bcrypt = require("bcryptjs");
 
 // Signup function for user
 const signupUser = async (req, res, next) => {
   const {
     username,
     fullName,
+    password,
     shopOrHospitalName,
     mobileNumber,
     location,
@@ -20,10 +22,13 @@ const signupUser = async (req, res, next) => {
   } = req.body;
 
   try {
+    const encryptedPassword = await bcrypt.hash(password, 10);
+
     // Create a new user
     const newUser = new User({
       username,
       fullName,
+      password: encryptedPassword,
       shopOrHospitalName,
       mobileNumber,
       location,
@@ -166,9 +171,55 @@ const checkUserExist = async (req, res, next) => {
   }
 };
 
+const loginUserWithPassword = async (req, res) => {
+  const { mobileNumber, password } = req.body;
+
+  try {
+    const user = await User.findOne({ mobileNumber }).lean();
+    if (!user) {
+      return res.status(200).json({
+        success: false,
+        user_verified: false,
+        message: "Invalid mobile number",
+      });
+    }
+    if (user.user_verified === false) {
+      return res
+        .status(200)
+        .json({
+          success: true,
+          user_verified: false,
+          message: "User is not verified",
+        });
+    }
+
+    const isMatch = await bycrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res
+        .status(200)
+        .json({
+          success: false,
+          user_verified: false,
+          message: "Invalid password",
+        });
+    }
+    const token = generateToken(user);
+    user.password = undefined;
+    return res.status(200).json({
+      success: true,
+      user_verified: true,
+      message: "Login successful!",
+      user,
+      token,
+    });
+  } catch (error) {
+    res.status(200).json({ success: false, message: error.message });
+  }
+};
 module.exports = {
   signupUser,
   loginUser,
   checkUserNotExist,
   checkUserExist,
+  loginUserWithPassword,
 };

@@ -4,6 +4,7 @@ const {
   loginUser,
   checkUserNotExist,
   checkUserExist,
+  loginUserWithPassword,
 } = require("../controllers/authController");
 const {
   validateUserSignupBody,
@@ -31,8 +32,16 @@ router.post(
   signupUser,
   sendOTP
 );
+// Route for sending otp login
+router.post("/send-otp", sendOTP);
+
 // Route for user login
-router.post("/login", validateUserLoginBody, checkUserExist, sendOTP);
+router.post(
+  "/login",
+  validateUserLoginBody,
+  checkUserExist,
+  loginUserWithPassword
+);
 
 // Route to verify OTP
 router.post("/verify-otp", verifyOTP, loginUser);

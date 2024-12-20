@@ -10,8 +10,7 @@ const getProducts = async (req, res) => {
     const totalDocuments = await Product.estimatedDocumentCount({});
     const randomSkip = Math.floor(Math.random() * (totalDocuments - 1000)); // Skip a random number of documents before selecting 1000 consecutive
     let query = [
-      { $skip: randomSkip },
-      { $limit: parseInt(limit) },
+      { $match: { $expr: { $gt: [{ $size: "$Image_URLS" }, 0] } } },
       { $sample: { size: parseInt(limit) } },
     ];
     if (Object.keys(req.body).length !== 0) {

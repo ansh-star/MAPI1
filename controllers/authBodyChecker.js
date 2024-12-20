@@ -16,6 +16,7 @@ const validateUserLoginBody = [
     .isNumeric()
     .isLength({ min: 10, max: 10 })
     .withMessage("Enter a valid mobile number"),
+  body("password").notEmpty().withMessage("Password is required"),
 ];
 
 module.exports = {

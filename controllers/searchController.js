@@ -4,7 +4,6 @@ const Roles = require("../utils/roles");
 
 const searchProducts = async (req, res) => {
   const { search, page = 1, limit = 50 } = req.query;
-  const { id: userId, role } = req.user;
 
   let query = {};
   if (search) {
@@ -13,24 +12,7 @@ const searchProducts = async (req, res) => {
 
   try {
     const skip = (page - 1) * limit;
-    if (role === Roles.WHOLESALER) {
-      // Fetch the user's product IDs
-      const user = await User.findById(userId).select("products").lean();
-      if (user?.products?.length > 0) {
-        query._id = { $in: user.products }; // Restrict search to user's products
-      } else {
-        // If no products are associated with the user, return an empty response
-        return res.status(200).json({
-          success: false,
-          message: "No products match your search",
-          products: [],
-          recommendedProducts: [],
-          total: 0,
-          page: parseInt(page),
-          totalPages: 0,
-        });
-      }
-    }
+
     // Execute the search and aggregation in parallel
     const [products, usesAndComposition] = await Promise.all([
       Product.find(query).skip(skip).limit(limit).lean(),
