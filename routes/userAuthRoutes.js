@@ -65,9 +65,12 @@ router.delete("/:userId", verifyAdmin, deleteUserDetails);
 // get wholesaler requests
 router.get("/wholesaler", verifyAdmin, getWholesalerRequest);
 
+// Route to verify a user
 router.put("/verify-user", verifyAdmin, verifyUser);
 
+// Route to make a user an admin
 router.put("/make-admin", verifyAdmin, makeAdmin);
+
 // Route for user logout
 router.post("/logout", (req, res) => {
   // Clear the authentication cookie containing the token

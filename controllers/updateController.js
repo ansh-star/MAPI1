@@ -220,7 +220,6 @@ const makeAdmin = async (req, res) => {
       { _id: id },
       { role: Roles.ADMIN }
     );
-    console.log(user);
     if (!user) {
       return res
         .status(200)
