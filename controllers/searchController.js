@@ -133,7 +133,19 @@ const recommendedProducts = async (req, res) => {
   }
 };
 
+const searchMobileNumber = async (req, res) => {
+  const { mobileNumber } = req.query;
+
+  try {
+    const user = await User.find({ mobileNumber }).lean();
+    res.status(200).json({ success: true, user });
+  } catch (error) {
+    res.status(200).json({ success: false, message: "Server Error" });
+  }
+};
+
 module.exports = {
   searchProducts,
   recommendedProducts,
+  searchMobileNumber,
 };

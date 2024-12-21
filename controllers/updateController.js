@@ -213,10 +213,31 @@ const addProductWholesaler = async (req, res) => {
   }
 };
 
+const makeAdmin = async (req, res) => {
+  const { id } = req.body;
+  try {
+    const user = await User.findOneAndUpdate(
+      { _id: id },
+      { role: Roles.ADMIN }
+    );
+    console.log(user);
+    if (!user) {
+      return res
+        .status(200)
+        .json({ success: false, message: "User not found" });
+    }
+    res.status(200).json({ success: true, message: "User is now an admin" });
+  } catch (error) {
+    console.error(error);
+    res.status(200).json({ success: false, message: "Server error" });
+  }
+};
+
 module.exports = {
   updateUserDetails,
   updateAdminDetails,
   updateProducts,
   verifyUser,
   addProductWholesaler,
+  makeAdmin,
 };

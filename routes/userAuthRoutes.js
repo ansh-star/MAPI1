@@ -13,6 +13,7 @@ const {
 const {
   updateUserDetails,
   verifyUser,
+  makeAdmin,
 } = require("../controllers/updateController");
 const { verifyToken, verifyAdmin } = require("../utils/tokenGenerator");
 const { deleteUserDetails } = require("../controllers/deleteController");
@@ -21,6 +22,7 @@ const {
   userDetails,
   getWholesalerRequest,
 } = require("../controllers/getUserDetails");
+const { searchMobileNumber } = require("../controllers/searchController");
 
 const router = express.Router();
 
@@ -52,6 +54,8 @@ router.use(verifyToken);
 // get user details
 router.get("/details", userDetails);
 
+router.get("/search", searchMobileNumber);
+
 // Route to update user details
 router.put("", updateUserDetails);
 
@@ -63,6 +67,7 @@ router.get("/wholesaler", verifyAdmin, getWholesalerRequest);
 
 router.put("/verify-user", verifyAdmin, verifyUser);
 
+router.put("/make-admin", verifyAdmin, makeAdmin);
 // Route for user logout
 router.post("/logout", (req, res) => {
   // Clear the authentication cookie containing the token
