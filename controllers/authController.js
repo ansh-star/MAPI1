@@ -184,24 +184,20 @@ const loginUserWithPassword = async (req, res) => {
       });
     }
     if (user.user_verified === false) {
-      return res
-        .status(200)
-        .json({
-          success: true,
-          user_verified: false,
-          message: "User is not verified",
-        });
+      return res.status(200).json({
+        success: true,
+        user_verified: false,
+        message: "User is not verified",
+      });
     }
 
-    const isMatch = await bycrypt.compare(password, user.password);
+    const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      return res
-        .status(200)
-        .json({
-          success: false,
-          user_verified: false,
-          message: "Invalid password",
-        });
+      return res.status(200).json({
+        success: false,
+        user_verified: false,
+        message: "Invalid password",
+      });
     }
     const token = generateToken(user);
     user.password = undefined;
