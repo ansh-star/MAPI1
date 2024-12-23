@@ -47,7 +47,7 @@ const userSchema = new mongoose.Schema({
   ],
   // User verification status
   user_verified: { type: Boolean, default: false },
-
+  mobile_verified: { type: Boolean, default: false },
   // Role field: 0 for Wholeseller, 1 for Retailer, 2 for Delivery Partner
   role: { type: Number, required: true, enum: [0, 1, 2, 3] },
 });

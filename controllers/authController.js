@@ -183,13 +183,6 @@ const loginUserWithPassword = async (req, res) => {
         message: "Invalid mobile number",
       });
     }
-    if (user.user_verified === false) {
-      return res.status(200).json({
-        success: true,
-        user_verified: false,
-        message: "User is not verified",
-      });
-    }
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
@@ -197,6 +190,13 @@ const loginUserWithPassword = async (req, res) => {
         success: false,
         user_verified: false,
         message: "Invalid password",
+      });
+    }
+    if (user.mobile_verified === false) {
+      return res.status(200).json({
+        success: true,
+        user_verified: false,
+        message: "User mobile Number is not verified",
       });
     }
     const token = generateToken(user);

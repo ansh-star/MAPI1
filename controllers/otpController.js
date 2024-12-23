@@ -55,7 +55,7 @@ const verifyOTP = async (req, res, next) => {
         .json({ success: false, message: response.data.message });
     }
 
-    await User.findOneAndUpdate({ mobileNumber }, { user_verified: true });
+    await User.findOneAndUpdate({ mobileNumber }, { mobile_verified: true });
 
     next();
   } catch (error) {

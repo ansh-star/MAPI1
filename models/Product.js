@@ -43,6 +43,7 @@ const productSchema = new mongoose.Schema({
   scheme_quantity: { type: Number },
   free_quantity: { type: Number },
   total_stock: { type: Number },
+  discount: { type: Number },
 });
 
 const Product = mongoose.model("Product", productSchema);
