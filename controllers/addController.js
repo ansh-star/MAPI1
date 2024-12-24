@@ -16,13 +16,12 @@ const addProduct = async (req, res) => {
     // Save the product to MongoDB
     await newProduct.save();
 
-    // if user is not admin the add the product id to the user schema
-    if (role === Roles.WHOLESALER) {
-      const userUpdated = await User.findOneAndUpdate(
-        { _id: id },
-        { $push: { products: newProduct._id } }
-      );
-    }
+    // add the product id to the user schema
+    const userUpdated = await User.findOneAndUpdate(
+      { _id: id },
+      { $push: { products: newProduct._id } }
+    );
+
     return res.status(201).json({
       success: true,
       message: "Product created successfully",

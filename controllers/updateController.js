@@ -186,7 +186,7 @@ const verifyUser = async (req, res) => {
 };
 
 const addProductWholesaler = async (req, res) => {
-  const { id: userid, role } = req.user;
+  const { id: userid } = req.user;
   const { productId } = req.params;
   try {
     const check = await User.findOne({ _id: userid, products: productId });
@@ -201,7 +201,10 @@ const addProductWholesaler = async (req, res) => {
       if (response) {
         return res
           .status(200)
-          .json({ success: true, message: "Product added to wholesaler" });
+          .json({
+            success: true,
+            message: "Product already added to wholesaler",
+          });
       }
     }
     return res

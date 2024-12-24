@@ -30,6 +30,7 @@ const getCart = async (req, res) => {
       .select("cart")
       .populate("cart.productId");
 
+    console.log(user);
     let remove = [];
     const userCart = user.cart.filter((item) => {
       if (item.productId === null) remove.push(item._id);
@@ -70,15 +71,30 @@ const getCart = async (req, res) => {
         .status(200)
         .json({ success: false, message: "Cart is empty", cart: [] });
     }
-    const totalAmount = user.cart.reduce(
+    const total_bag = user.cart.reduce(
       (amount, item) => amount + item.quantity * (item.productId?.mrp || 0),
       0
     );
+    const offer_discount = user.cart.reduce(
+      (amount, item) =>
+        amount +
+        item.quantity *
+          (item.productId?.mrp || 0) *
+          ((item.productId?.discount || 0) / 100),
+      0
+    );
+    const delivery_charge = 40;
+    const subtotal = total_bag - offer_discount;
+    const grand_total = subtotal + devlivery_charge;
     return res.status(200).json({
       success: true,
       cart: user.cart,
       recommendedProducts,
-      totalAmount,
+      total_bag,
+      offer_discount,
+      delivery_charge,
+      subtotal,
+      grand_total,
     });
   } catch (error) {
     console.error(error);
@@ -138,9 +154,10 @@ const getWholesalerRequest = async (req, res) => {
         .json({ success: false, message: "User not found" });
     }
 
-    res
-      .status(200)
-      .json({ success: true, wholesalerRequests: user[0].wholesalerRequests });
+    res.status(200).json({
+      success: true,
+      wholesalerRequests: (user.length > 0 && user[0].wholesalerRequests) || [],
+    });
   } catch (error) {
     console.error(error);
     res.status(200).json({
