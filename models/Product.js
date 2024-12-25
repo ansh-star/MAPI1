@@ -39,7 +39,7 @@ const productSchema = new mongoose.Schema({
   Image_URLS: { type: [String] },
   location: { type: String },
   Expiry_Date: { type: Date },
-  min_quantity: { type: Number },
+  min_quantity: { type: Number, default: 1 },
   scheme_quantity: { type: Number },
   free_quantity: { type: Number },
   total_stock: { type: Number },
