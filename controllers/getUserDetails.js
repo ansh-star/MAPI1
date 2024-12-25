@@ -30,7 +30,6 @@ const getCart = async (req, res) => {
       .select("cart")
       .populate("cart.productId");
 
-    console.log(user);
     let remove = [];
     const userCart = user.cart.filter((item) => {
       if (item.productId === null) remove.push(item._id);
@@ -85,7 +84,7 @@ const getCart = async (req, res) => {
     );
     const delivery_charge = 40;
     const subtotal = total_bag - offer_discount;
-    const grand_total = subtotal + devlivery_charge;
+    const grand_total = subtotal + delivery_charge;
     return res.status(200).json({
       success: true,
       cart: user.cart,
