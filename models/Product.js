@@ -39,11 +39,36 @@ const productSchema = new mongoose.Schema({
   Image_URLS: { type: [String] },
   location: { type: String },
   Expiry_Date: { type: Date },
-  min_quantity: { type: Number, default: 1 },
-  scheme_quantity: { type: Number },
-  free_quantity: { type: Number },
-  total_stock: { type: Number },
-  discount: { type: Number },
+  min_quantity: { type: Number, default: 4 },
+  scheme_quantity: { type: Number, default: 10 },
+  free_quantity: { type: Number, default: 1 },
+  total_stock: { type: Number, default: 10 },
+  discount: { type: Number, default: 20 },
+  sale_price: {
+    type: Number,
+  },
+  discount_price: {
+    type: Number,
+  },
+});
+
+productSchema.pre("save", function (next) {
+  if (this.isModified("mrp") || this.isModified("discount")) {
+    this.discount_price = (this.mrp * this.discount) / 100;
+    this.sale_price = this.mrp - this.discount_price;
+  }
+  next();
+});
+
+productSchema.pre(["updateOne", "findOneAndUpdate"], async function (next) {
+  const update = this.getUpdate();
+  const mrp = update?.mrp;
+  const discount = update?.discount;
+  if (mrp && discount) {
+    update.discount_price = (mrp * discount) / 100;
+    update.sale_price = mrp - update.discount_price;
+  }
+  next();
 });
 
 const Product = mongoose.model("Product", productSchema);

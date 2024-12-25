@@ -28,14 +28,21 @@ const getCart = async (req, res) => {
   try {
     const user = await User.findById(id)
       .select("cart")
-      .populate("cart.productId");
+      .populate("cart.productId")
+      .lean();
 
     let remove = [];
     const userCart = user.cart.filter((item) => {
       if (item.productId === null) remove.push(item._id);
       return item.productId !== null;
     });
-    user.cart = userCart;
+
+    user.cart = userCart.map((item) => {
+      item.free_quantity =
+        Math.floor(item.quantity / item.productId?.scheme_quantity) *
+        item.productId?.free_quantity;
+      return item;
+    });
 
     if (remove.length > 0) {
       await User.findByIdAndUpdate(id, {
@@ -76,15 +83,18 @@ const getCart = async (req, res) => {
     );
     const offer_discount = user.cart.reduce(
       (amount, item) =>
-        amount +
-        item.quantity *
-          (item.productId?.mrp || 0) *
-          ((item.productId?.discount || 0) / 100),
+        amount + (item.productId?.discount_price || 0) * item.quantity,
       0
     );
     const delivery_charge = 40;
     const subtotal = total_bag - offer_discount;
     const grand_total = subtotal + delivery_charge;
+    const free_items = user.cart.reduce(
+      (free, item) =>
+        Math.floor(item.quantity / item.productId?.scheme_quantity) *
+        item.productId?.free_quantity,
+      0
+    );
     return res.status(200).json({
       success: true,
       cart: user.cart,
@@ -94,6 +104,7 @@ const getCart = async (req, res) => {
       delivery_charge,
       subtotal,
       grand_total,
+      free_items,
     });
   } catch (error) {
     console.error(error);
