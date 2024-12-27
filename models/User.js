@@ -31,17 +31,14 @@ const userSchema = new mongoose.Schema({
   // Address List
   addressList: [
     {
-      street: { type: String, required: true },
-      city: { type: String, required: true },
-      state: { type: String, required: true },
-      postalCode: { type: String, required: true },
-      isDefault: { type: Boolean, default: false },
+      type: Schema.Types.ObjectId,
+      ref: "Address",
     },
   ],
   wholesalerRequests: [
     // Separate array for Wholesalers
     {
-      type: mongoose.Schema.Types.ObjectId,
+      type: Schema.Types.ObjectId,
       ref: "User",
     },
   ],

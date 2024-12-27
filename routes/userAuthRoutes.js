@@ -23,6 +23,12 @@ const {
   getWholesalerRequest,
 } = require("../controllers/getUserDetails");
 const { searchMobileNumber } = require("../controllers/searchController");
+const {
+  addUserAddress,
+  updateUserAddress,
+  deleteUserAddress,
+  getUserAddress,
+} = require("../controllers/addressContorller");
 
 const router = express.Router();
 
@@ -59,9 +65,6 @@ router.get("/search", searchMobileNumber);
 // Route to update user details
 router.put("", updateUserDetails);
 
-// Route to delete user details
-router.delete("/:userId", verifyAdmin, deleteUserDetails);
-
 // get wholesaler requests
 router.get("/wholesaler", verifyAdmin, getWholesalerRequest);
 
@@ -70,6 +73,21 @@ router.put("/verify-user", verifyAdmin, verifyUser);
 
 // Route to make a user an admin
 router.put("/make-admin", verifyAdmin, makeAdmin);
+
+// Route to get user address
+router.get("/address", getUserAddress);
+
+// Route to add user address
+router.post("/address", addUserAddress);
+
+// Route to update user address
+router.put("/address", updateUserAddress);
+
+// Route to delete user address
+router.delete("/address", deleteUserAddress);
+
+// Route to delete user details
+router.delete("/:userId", verifyAdmin, deleteUserDetails);
 
 // Route for user logout
 router.post("/logout", (req, res) => {
