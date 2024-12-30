@@ -31,7 +31,6 @@ const addUserAddress = async (req, res) => {
       message: "Address added successfully",
     });
   } catch (error) {
-    conso;
     res.status(200).json({ success: false, message: "Error adding address" });
   }
 };
@@ -61,7 +60,6 @@ const updateUserAddress = async (req, res) => {
       .status(200)
       .json({ success: false, message: "Address does not exist" });
   } catch (error) {
-    console.log(error);
     res.status(200).json({ success: false, message: "Error updating address" });
   }
 };
@@ -101,8 +99,10 @@ const getUserAddress = async (req, res) => {
       .select("addressList")
       .populate("addressList")
       .lean();
-    if (user) {
+    if (user && user.addressList.length > 0) {
       return res.status(200).json({ success: true, user });
+    } else if (user) {
+      return res.status(200).json({ success: false, user });
     }
     return res.status(200).json({ success: false, message: "User not found" });
   } catch (error) {
