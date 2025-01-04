@@ -44,13 +44,13 @@ const deleteCategory = async (req, res) => {
 };
 const searchCategories = async (req, res) => {
   try {
-    const cities = await Category.find({
+    const category = await Category.find({
       category_name: { $regex: `^${req.query.prefix}`, $options: "i" },
     })
       .hint({ category_name: 1 })
       .limit(10)
       .lean();
-    return res.status(200).json({ success: true, cities });
+    return res.status(200).json({ success: true, category });
   } catch (error) {
     res
       .status(200)
