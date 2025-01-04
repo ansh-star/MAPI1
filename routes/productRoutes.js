@@ -21,9 +21,6 @@ const {
 } = require("../controllers/searchController");
 const router = express.Router();
 
-//verfiy token
-router.use(verifyToken);
-
 // get products according to pageNumber and limit
 router.get("", getProducts);
 
