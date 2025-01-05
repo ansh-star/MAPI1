@@ -189,7 +189,7 @@ const loginUserWithPassword = async (req, res) => {
       return res.status(200).json({
         success: false,
         user_verified: false,
-        message: "Invalid password",
+        message: "Incorrect password",
       });
     }
     if (user.mobile_verified === false) {

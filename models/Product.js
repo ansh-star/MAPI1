@@ -50,6 +50,7 @@ const productSchema = new mongoose.Schema({
   discount_price: {
     type: Number,
   },
+  category_name: { type: String },
 });
 
 productSchema.pre("save", function (next) {
