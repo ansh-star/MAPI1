@@ -68,11 +68,23 @@ const getCategory = async (req, res) => {
       .json({ success: false, message: "Error in fetching the category" });
   }
 };
-
+const getCategories = async (req, res) => {
+  const { pageNumber = 1, limit = 10 } = req.query;
+  try {
+    const categories = await Category.aggregate([
+      { $skip: (parseInt(pageNumber) - 1) * parseInt(limit) },
+      { $limit: parseInt(limit) },
+    ]);
+    res.status(200).json({ success: true, categories });
+  } catch (error) {
+    res.status(200).json({ success: false, message: error.message });
+  }
+};
 module.exports = {
   addCategory,
   updateCategory,
   deleteCategory,
   searchCategories,
   getCategory,
+  getCategories,
 };
