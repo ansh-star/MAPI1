@@ -1,5 +1,5 @@
 const express = require("express");
-const { verifyToken, verifyRole } = require("../utils/tokenGenerator");
+const { verifyRole } = require("../utils/tokenGenerator");
 const { productValidator } = require("../controllers/productChecker");
 const { addProduct } = require("../controllers/addController");
 const {
@@ -18,6 +18,7 @@ const {
 const {
   searchProducts,
   recommendedProducts,
+  getProductByCategory,
 } = require("../controllers/searchController");
 const router = express.Router();
 
@@ -32,6 +33,9 @@ router.get("/recommend/:productId", recommendedProducts);
 
 //get product by productId
 router.get("/my", getMyProducts);
+
+// get product by category
+router.get("/category", getProductByCategory);
 
 router.get("/:productId", getProduct);
 

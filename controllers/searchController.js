@@ -1,6 +1,5 @@
 const Product = require("../models/Product");
 const User = require("../models/User");
-const Roles = require("../utils/roles");
 
 const searchProducts = async (req, res) => {
   const { search, page = 1, limit = 50 } = req.query;
@@ -144,8 +143,43 @@ const searchMobileNumber = async (req, res) => {
   }
 };
 
+const getProductByCategory = async (req, res) => {
+  const { page = 1, limit = 50, category } = req.query;
+
+  try {
+    const skip = (page - 1) * limit;
+    const products = await Product.find({ category_name: category })
+      .hint({ category_name: 1 })
+      .skip(skip)
+      .limit(limit)
+      .lean();
+
+    const total = products.length;
+
+    res.json({
+      success: true,
+      message: "Products retrieved successfully",
+      products,
+      total,
+      page: parseInt(page),
+      totalPages: Math.ceil(total / limit),
+    });
+  } catch (error) {
+    console.error("Error fetching products by category:", error);
+    res.status(200).json({
+      success: false,
+      message: "Server Error",
+      products: [],
+      total: 0,
+      page: 1,
+      totalPages: 0,
+    });
+  }
+};
+
 module.exports = {
   searchProducts,
   recommendedProducts,
   searchMobileNumber,
+  getProductByCategory,
 };

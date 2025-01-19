@@ -3,7 +3,9 @@ const userAuthRoutes = require("./userAuthRoutes");
 const productRoutes = require("./productRoutes");
 const cartRoutes = require("./cartRoutes");
 const getCities = require("../controllers/getCities");
+const orderRoutes = require("./orderRoutes");
 const categoryRoutes = require("./categoryRoutes");
+const paymentRoutes = require("./paymentRoutes");
 const { verifyToken } = require("../utils/tokenGenerator");
 const router = express.Router();
 
@@ -24,5 +26,11 @@ router.get("/cities", getCities);
 
 // category routes
 router.use("/category", categoryRoutes);
+
+// order routes
+router.use("/order", orderRoutes);
+
+// payment routes
+router.use("/payment", paymentRoutes);
 
 module.exports = router;
