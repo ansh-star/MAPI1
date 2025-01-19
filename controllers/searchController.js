@@ -144,7 +144,7 @@ const searchMobileNumber = async (req, res) => {
 };
 
 const getProductByCategory = async (req, res) => {
-  const { page = 1, limit = 50, category } = req.query;
+  const { page = 1, limit = 50, category } = req.body;
 
   try {
     const skip = (page - 1) * limit;

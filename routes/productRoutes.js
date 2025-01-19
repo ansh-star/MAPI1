@@ -48,8 +48,6 @@ router.put("/:productId/add", addProductWholesaler);
 //verify role of user
 router.use(verifyRole);
 
-// get wholesaler products
-
 // add product and validate the body
 router.post("", productValidator, addProduct);
 
