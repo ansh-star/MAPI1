@@ -21,9 +21,12 @@ const getOrders = async (req, res) => {
   const { id } = req.user;
   try {
     const user = await User.findById(id).populate("orders");
-    res.status(200).json({ success: true, orders: user.orders });
+    res.status(200).json({ success: true, orders: user?.orders || [] });
   } catch (error) {
-    res.status(200).json({ success: false, message: error.message });
+    res.status(200).json({
+      success: false,
+      message: error.message,
+    });
   }
 };
 

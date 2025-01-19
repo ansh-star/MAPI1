@@ -144,11 +144,12 @@ const searchMobileNumber = async (req, res) => {
 };
 
 const getProductByCategory = async (req, res) => {
-  const { page = 1, limit = 50, category } = req.body;
+  const { page = 1, limit = 50, category_slug } = req.query;
 
   try {
     const skip = (page - 1) * limit;
-    const products = await Product.find({ category_name: category })
+    const category_name = category_slug.replace("_", " ");
+    const products = await Product.find({ category_name })
       .hint({ category_name: 1 })
       .skip(skip)
       .limit(limit)
