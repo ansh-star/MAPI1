@@ -6,8 +6,6 @@ const { getCart } = require("../controllers/getUserDetails");
 
 const router = express.Router();
 
-router.use(verifyRole);
-
 router.get("", getCart);
 
 router.post("", addProductToCart);
