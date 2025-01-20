@@ -20,6 +20,7 @@ const orderSchema = new Schema({
   order_payment_id: { type: String, required: true },
   order_payment_status: { type: String, required: true },
   order_payment_method: { type: String, required: true },
+  cancelled: { type: Boolean, default: false },
 });
 
 const Order = mongoose.model("Order", orderSchema);
