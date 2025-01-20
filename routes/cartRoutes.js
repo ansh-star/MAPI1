@@ -1,5 +1,4 @@
 const express = require("express");
-const { verifyRole } = require("../utils/tokenGenerator");
 const { deleteProductFromCart } = require("../controllers/deleteController");
 const { addProductToCart } = require("../controllers/addController");
 const { getCart } = require("../controllers/getUserDetails");
