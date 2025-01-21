@@ -30,6 +30,9 @@ const placeOrder = async (req, res) => {
       Math.round((order_amount - order_discount) * 100) / 100;
     orderData.order_payment_status = "unpaid";
     orderData.order_payment_method = "UPI";
+    if (req.body.order_payment_id) {
+      orderData.order_payment_status = req.body.order_payment_status;
+    }
     const order = new Order(orderData);
     const savedOrder = await order.save();
     const user = await User.findByIdAndUpdate(
