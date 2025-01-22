@@ -17,6 +17,9 @@ const placeOrder = async (req, res) => {
     var order_amount = 0;
     var order_discount = 0;
     const n = cartData.cart.length;
+    if (n === 0) {
+      return res.status(200).json({ success: false, message: "Cart is empty" });
+    }
     for (let i = 0; i < n; i++) {
       const pro = await Product.findById(cartData.cart[i].productId, {
         mrp: 1,
