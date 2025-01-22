@@ -62,4 +62,53 @@ const getOrders = async (req, res) => {
   }
 };
 
-module.exports = { placeOrder, getOrders };
+const updateOrder = async (req, res) => {
+  const { order_id } = req.body;
+  try {
+    req.body.order_id = undefined;
+    const order = await Order.findByIdAndUpdate(
+      order_id,
+      { ...req.body },
+      { new: true }
+    );
+    return res
+      .status(200)
+      .json({ success: true, message: "Order Updated successfully" });
+  } catch (error) {
+    return res.status(200).json({ success: false, message: error.message });
+  }
+};
+
+const assignToDeliveryPartner = async (req, res) => {
+  const { deliveryPartner, order_id } = req.body;
+  try {
+    const order = await Order.findById(order_id);
+    if (order.assigned !== "") {
+      var assignOrder = await User.findByIdAndUpdate(
+        deliveryPartner,
+        { $push: { orders: order_id } },
+        { new: true }
+      );
+      order.assigned = deliveryPartner;
+      await order.save();
+    }
+    if (assignOrder) {
+      return res
+        .status(200)
+        .json({ success: true, message: "Order assigned to delivery partner" });
+    }
+    return res.status(200).json({
+      success: false,
+      message: "Order not assigned to delivery partner",
+    });
+  } catch {
+    return res.status(200).json({ success: false, message: error.message });
+  }
+};
+
+module.exports = {
+  placeOrder,
+  getOrders,
+  updateOrder,
+  assignToDeliveryPartner,
+};

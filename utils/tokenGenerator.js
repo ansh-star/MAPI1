@@ -61,4 +61,22 @@ const verifyAdmin = async (req, res, next) => {
   }
 };
 
-module.exports = { generateToken, verifyToken, verifyRole, verifyAdmin };
+const verifyDeliveryPartner = async (req, res, next) => {
+  const { role } = req.user;
+
+  if (role === Roles.DELIVERY_PARTNER) {
+    next();
+  } else {
+    return res
+      .status(200)
+      .json({ success: false, message: "This role cannot request this" });
+  }
+};
+
+module.exports = {
+  generateToken,
+  verifyToken,
+  verifyRole,
+  verifyAdmin,
+  verifyDeliveryPartner,
+};

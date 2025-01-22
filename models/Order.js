@@ -20,7 +20,7 @@ const orderSchema = new Schema({
   order_payment_id: { type: String },
   order_payment_status: { type: String, required: true },
   order_payment_method: { type: String, required: true },
-  cancelled: { type: Boolean, default: false },
+  assigned: { type: Schema.Types.ObjectId, ref: "DeliveryPartner" },
 });
 
 const Order = mongoose.model("Order", orderSchema);
