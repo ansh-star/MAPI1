@@ -5,24 +5,27 @@ const User = require("../models/User");
 const placeOrder = async (req, res) => {
   const { id } = req.user;
   try {
+    const cartData = await User.findById(id, { cart: 1 })
+      .populate("cart.productId")
+      .lean();
     const orderData = req.body;
+    orderData.products = cartData.cart;
     orderData.user_id = id;
     orderData.order_date = Date.now();
     orderData.order_status = "in process";
     orderData.order_delivery_charge = 40;
     var order_amount = 0;
     var order_discount = 0;
-    const n = orderData.products.length;
+    const n = cartData.cart.length;
     for (let i = 0; i < n; i++) {
-      const pro = await Product.findById(orderData.products[i].product, {
+      const pro = await Product.findById(cartData.cart[i].productId, {
         mrp: 1,
         discount: 1,
       }).lean();
 
-      order_amount += pro.mrp * orderData.products[i].quantity;
+      order_amount += pro.mrp * cartData.cart[i].quantity;
       order_discount +=
-        ((pro.mrp * (100 - pro.discount)) / 100) *
-        orderData.products[i].quantity;
+        ((pro.mrp * (100 - pro.discount)) / 100) * cartData.cart[i].quantity;
     }
     orderData.order_amount = Math.round(order_amount * 100) / 100;
     orderData.order_discount = Math.round(order_discount * 100) / 100;
