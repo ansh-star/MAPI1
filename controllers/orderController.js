@@ -55,7 +55,21 @@ const placeOrder = async (req, res) => {
 const getOrders = async (req, res) => {
   const { id } = req.user;
   try {
-    const user = await User.findById(id).populate("orders");
+    const user = await User.findById(id)
+      .select("orders")
+      .populate({
+        path: "orders",
+        populate: [
+          {
+            path: "products.product",
+            model: "Product",
+          },
+          {
+            path: "address",
+            model: "Address",
+          },
+        ],
+      });
     res.status(200).json({ success: true, orders: user?.orders || [] });
   } catch (error) {
     res.status(200).json({
