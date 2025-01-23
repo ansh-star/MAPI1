@@ -43,8 +43,11 @@ const placeOrder = async (req, res) => {
     const savedOrder = await order.save();
     const user = await User.findByIdAndUpdate(
       id,
-      { $push: { orders: savedOrder._id } },
-      { new: true }
+      {
+        $set: { cart: [] }, // Clear the cart
+        $push: { orders: savedOrder._id }, // Push the order ID into the orders array
+      },
+      { new: true } // Return the updated document
     );
     res.status(200).json({ success: true, order: savedOrder });
   } catch (error) {
@@ -61,7 +64,7 @@ const getOrders = async (req, res) => {
         path: "orders",
         populate: [
           {
-            path: "products.product",
+            path: "products.productId",
             model: "Product",
           },
           {

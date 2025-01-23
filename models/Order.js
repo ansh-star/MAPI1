@@ -7,7 +7,7 @@ const orderSchema = new Schema({
   order_status: { type: String, required: true },
   products: [
     {
-      product: { type: Schema.Types.ObjectId, ref: "Product" },
+      productId: { type: Schema.Types.ObjectId, ref: "Product" },
       quantity: { type: Number },
     },
   ],
