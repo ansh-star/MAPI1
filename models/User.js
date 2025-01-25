@@ -47,7 +47,7 @@ const userSchema = new mongoose.Schema({
   mobile_verified: { type: Boolean, default: false },
   // Role field: 0 for Wholeseller, 1 for Retailer, 2 for Delivery Partner
   role: { type: Number, required: true, enum: [0, 1, 2, 3] },
-
+  notifications: [{ type: Schema.Types.ObjectId, ref: "Notification" }],
   orders: [
     {
       type: Schema.Types.ObjectId,

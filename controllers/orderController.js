@@ -1,3 +1,4 @@
+const Notification = require("../models/Nodtification");
 const Order = require("../models/Order");
 const Product = require("../models/Product");
 const User = require("../models/User");
@@ -28,12 +29,11 @@ const placeOrder = async (req, res) => {
 
       order_amount += pro.mrp * cartData.cart[i].quantity;
       order_discount +=
-        ((pro.mrp * (100 - pro.discount)) / 100) * cartData.cart[i].quantity;
+        ((pro.mrp * pro.discount) / 100) * cartData.cart[i].quantity;
     }
-    orderData.order_amount = Math.round(order_amount * 100) / 100;
-    orderData.order_discount = Math.round(order_discount * 100) / 100;
-    orderData.order_total_amount =
-      Math.round((order_amount - order_discount) * 100) / 100;
+    orderData.order_amount = order_amount;
+    orderData.order_discount = order_discount;
+    orderData.order_total_amount = order_amount - order_discount + 40;
     orderData.order_payment_status = "unpaid";
     orderData.order_payment_method = "UPI";
     if (req.body.order_payment_id) {
@@ -49,6 +49,16 @@ const placeOrder = async (req, res) => {
       },
       { new: true } // Return the updated document
     );
+    const notification = new Notification({
+      user_id: id,
+      Notification_title: "Order Placed",
+      Notification_body: `Your order (#${order._id}) has been placed`,
+      Date: Date.now(),
+    });
+    await notification.save();
+    await User.findByIdAndUpdate(id, {
+      $push: { notifications: notification._id },
+    });
     res.status(200).json({ success: true, order: savedOrder });
   } catch (error) {
     res.status(200).json({ success: false, message: error.message });
@@ -91,9 +101,26 @@ const updateOrder = async (req, res) => {
       { ...req.body },
       { new: true }
     );
+    if (order) {
+      const notification = new Notification({
+        user_id: order.user_id,
+        Notification_title: "Order status Update",
+        Notification_body: `Your order (#${order_id}) status has been updated to '${req.body?.order_status}'`,
+      });
+
+      await notification.save();
+
+      await User.findByIdAndUpdate(order.user_id, {
+        $push: { notifications: notification._id },
+      });
+
+      return res
+        .status(200)
+        .json({ success: true, message: "Order Updated successfully" });
+    }
     return res
       .status(200)
-      .json({ success: true, message: "Order Updated successfully" });
+      .json({ success: false, message: "Order with this id does not exist" });
   } catch (error) {
     return res.status(200).json({ success: false, message: error.message });
   }
@@ -103,7 +130,8 @@ const assignToDeliveryPartner = async (req, res) => {
   const { deliveryPartner, order_id } = req.body;
   try {
     const order = await Order.findById(order_id);
-    if (order.assigned !== "") {
+    console.log(order);
+    if (!order.assigned || order.assigned === "") {
       var assignOrder = await User.findByIdAndUpdate(
         deliveryPartner,
         { $push: { orders: order_id } },
@@ -113,6 +141,18 @@ const assignToDeliveryPartner = async (req, res) => {
       await order.save();
     }
     if (assignOrder) {
+      const notification = new Notification({
+        user_id: deliveryPartner,
+        Notification_title: "New order assigned",
+        Notification_body: `Your have been assigned to a new order (#${order_id})`,
+      });
+
+      await notification.save();
+
+      await User.findByIdAndUpdate(deliveryPartner, {
+        $push: { notifications: notification._id },
+      });
+
       return res
         .status(200)
         .json({ success: true, message: "Order assigned to delivery partner" });
@@ -121,14 +161,43 @@ const assignToDeliveryPartner = async (req, res) => {
       success: false,
       message: "Order not assigned to delivery partner",
     });
-  } catch {
+  } catch (error) {
     return res.status(200).json({ success: false, message: error.message });
   }
 };
-
+const cancelOrder = async (req, res) => {
+  const { id } = req.user;
+  const { order_id } = req.body;
+  try {
+    const order = await User.find({ _id: id, orders: order_id });
+    if (order) {
+      await Order.findByIdAndUpdate(order_id, {
+        order_status: "cancelled",
+      });
+      const notification = new Notification({
+        user_id: id,
+        Notification_title: "Order Status Update",
+        Notification_body: `Your order (#${order_id}) has been cancelled`,
+      });
+      await notification.save();
+      await User.findByIdAndUpdate(id, {
+        $push: { notifications: notification._id },
+      });
+      return res
+        .status(200)
+        .json({ success: true, message: "Order cancelled successfully" });
+    }
+    res
+      .status(200)
+      .json({ success: false, message: "This user cannot cancel this order" });
+  } catch (error) {
+    res.status(200).json({ success: false, message: error.message });
+  }
+};
 module.exports = {
   placeOrder,
   getOrders,
   updateOrder,
   assignToDeliveryPartner,
+  cancelOrder,
 };
