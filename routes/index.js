@@ -13,6 +13,9 @@ const router = express.Router();
 // For user signup and login
 router.use("/user", userAuthRoutes);
 
+// get cities
+router.get("/cities", getCities);
+
 // verify token
 router.use(verifyToken);
 
@@ -21,9 +24,6 @@ router.use("/product", productRoutes);
 
 // cart routes
 router.use("/cart", cartRoutes);
-
-// get cities
-router.get("/cities", getCities);
 
 // category routes
 router.use("/category", categoryRoutes);
@@ -34,6 +34,7 @@ router.use("/order", orderRoutes);
 // payment routes
 router.use("/payment", paymentRoutes);
 
+//notification routes
 router.use("/notifications", notificationRoutes);
 
 module.exports = router;
