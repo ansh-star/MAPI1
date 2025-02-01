@@ -3,7 +3,7 @@ const Location = require("../models/Location");
 const getCities = async (req, res) => {
   try {
     const prefix = req.query.prefix;
-    console.log("prefix", prefix);
+
     if (!prefix) {
       return res
         .status(200)

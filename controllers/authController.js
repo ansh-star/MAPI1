@@ -206,9 +206,20 @@ const loginUserWithPassword = async (req, res) => {
     }
     const token = generateToken(user);
     user.password = undefined;
+    if (user.user_verified === false) {
+      return res.status(200).json({
+        success: true,
+        loginAllowed: false,
+        user_verified: true,
+        message: "Login successful! But user is not verified",
+        user,
+        token,
+      });
+    }
     return res.status(200).json({
       success: true,
       user_verified: true,
+      loginAllowed: true,
       message: "Login successful!",
       user,
       token,

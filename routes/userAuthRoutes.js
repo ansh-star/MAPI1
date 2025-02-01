@@ -44,6 +44,7 @@ router.post(
   signupUser,
   sendOTP
 );
+
 // Route for sending otp login
 router.post("/send-otp", sendOTP);
 
