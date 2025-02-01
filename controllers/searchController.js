@@ -155,7 +155,7 @@ const searchMobileNumber = async (req, res) => {
 };
 
 const getProductByCategory = async (req, res) => {
-  const { page = 1, limit = 50, category_slug } = req.query;
+  const { page = 1, limit = 50, category_slug, sort } = req.query;
 
   try {
     const skip = (page - 1) * limit;
@@ -167,7 +167,11 @@ const getProductByCategory = async (req, res) => {
       .lean();
 
     const total = products.length;
-
+    if (sort === "price_low_to_high") {
+      products.sort((a, b) => a.mrp - b.mrp);
+    } else if (sort === "price_high_to_low") {
+      products.sort((a, b) => a.mrp - b.mrp).reverse();
+    }
     res.json({
       success: true,
       message: "Products retrieved successfully",
