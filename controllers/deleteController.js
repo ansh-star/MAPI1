@@ -135,20 +135,39 @@ const deleteWholesalerProduct = async (req, res) => {
       { _id: id },
       { $pull: { products: productId } }
     );
-    return res
-      .status(200)
-      .json({
-        success: true,
-        message: "Product deleted from wholesaler list successfully",
-      });
+    return res.status(200).json({
+      success: true,
+      message: "Product deleted from wholesaler list successfully",
+    });
   } catch (error) {
     console.log(error);
-    return res
-      .status(200)
-      .json({
+    return res.status(200).json({
+      success: false,
+      message: "Cannot delete product from wholesaler list",
+    });
+  }
+};
+
+const deleteUser = async (req, res) => {
+  const { id } = req.user;
+  try {
+    // Delete a user
+    const existingUser = await User.findOneAndDelete({ _id: id });
+    if (!existingUser) {
+      return res.status(200).json({
         success: false,
-        message: "Cannot delete product from wholesaler list",
+        message: "User does not exists with this id.",
       });
+    }
+    // Respond with success
+    res.status(201).json({
+      success: true,
+      message: "User deleted successfully!",
+      user: existingUser.toObject(),
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(200).json({ success: false, message: "Server error" });
   }
 };
 module.exports = {
@@ -157,4 +176,5 @@ module.exports = {
   deleteProducts,
   deleteProductFromCart,
   deleteWholesalerProduct,
+  deleteUser,
 };

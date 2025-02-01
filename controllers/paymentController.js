@@ -1,6 +1,7 @@
 const crypto = require("crypto");
 const axios = require("axios");
 const Payment = require("../models/Payment");
+const Order = require("../models/Order");
 
 let salt_key = "96434309-7796-489d-8924-ab56988a6076";
 let merchant_id = "PGTESTPAYUAT86";
@@ -101,6 +102,14 @@ const paymentStatus = async (req, res) => {
     });
 
     await newPayment.save();
+
+    await Order.findOneAndUpdate(
+      { _id: orderId },
+      {
+        order_payment_id: newPayment._id,
+        order_payment_status: paymentStatus,
+      }
+    );
 
     const redirectUrl = response.data.success
       ? "http://localhost:5173/success"

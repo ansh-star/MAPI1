@@ -1,6 +1,7 @@
 const { default: mongoose } = require("mongoose");
 const Product = require("../models/Product");
 const User = require("../models/User");
+const Notification = require("../models/Nodtification");
 
 const addProduct = async (req, res) => {
   const { id, role } = req.user;
@@ -39,12 +40,6 @@ const addProductToCart = async (req, res) => {
   let { productID, quantity } = req.body;
 
   try {
-    if (!mongoose.Types.ObjectId.isValid(productID)) {
-      return res.status(200).json({
-        success: false,
-        message: "Invalid order id. Please provide a valid order id.",
-      });
-    }
     quantity = parseInt(quantity);
     if (quantity < 0) {
       return res
@@ -77,6 +72,14 @@ const addProductToCart = async (req, res) => {
     }
 
     await user.save();
+
+    const notification = new Notification({
+      user: id,
+      title: "Product added to cart",
+      content:"Products added to cart successfully",
+    })
+
+    await notification.save();
 
     return res
       .status(200)

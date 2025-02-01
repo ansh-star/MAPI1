@@ -17,7 +17,10 @@ const orderSchema = new Schema({
   order_batch_no: { type: String },
   order_total_amount: { type: Number, required: true },
   address: { type: Schema.Types.ObjectId, required: true, ref: "Address" },
-  order_payment_id: { type: String },
+  order_payment_id: {
+    type: Schema.Types.ObjectId,
+    ref: "Payment",
+  },
   order_payment_status: { type: String, required: true },
   order_payment_method: { type: String, required: true },
   assigned: { type: Schema.Types.ObjectId, ref: "user" },

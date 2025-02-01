@@ -16,11 +16,15 @@ const {
   makeAdmin,
 } = require("../controllers/updateController");
 const { verifyToken, verifyAdmin } = require("../utils/tokenGenerator");
-const { deleteUserDetails } = require("../controllers/deleteController");
+const {
+  deleteUserDetails,
+  deleteUser,
+} = require("../controllers/deleteController");
 const { sendOTP, verifyOTP } = require("../controllers/otpController");
 const {
   userDetails,
   getWholesalerRequest,
+  getRetailerRequest,
 } = require("../controllers/getUserDetails");
 const { searchMobileNumber } = require("../controllers/searchController");
 const {
@@ -68,6 +72,9 @@ router.put("", updateUserDetails);
 // get wholesaler requests
 router.get("/wholesaler", verifyAdmin, getWholesalerRequest);
 
+//get retailer requests
+router.get("/retailer", verifyAdmin, getRetailerRequest);
+
 // Route to verify a user
 router.put("/verify-user", verifyAdmin, verifyUser);
 
@@ -85,6 +92,8 @@ router.put("/address", updateUserAddress);
 
 // Route to delete user address
 router.delete("/address", deleteUserAddress);
+
+router.delete("", deleteUser);
 
 // Route to delete user details
 router.delete("/:userId", verifyAdmin, deleteUserDetails);

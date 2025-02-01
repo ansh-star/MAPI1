@@ -48,8 +48,13 @@ const signupUser = async (req, res, next) => {
         { role: Roles.ADMIN },
         { $push: { wholesalerRequests: newUser._id } }
       );
+    } else if (role === Roles.RETAILER) {
+      console.log("pushing");
+      await User.updateMany(
+        { role: Roles.ADMIN },
+        { $push: { retailerRequests: newUser._id } }
+      );
     }
-
     next();
   } catch (error) {
     console.error(error);

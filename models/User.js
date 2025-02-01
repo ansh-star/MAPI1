@@ -42,6 +42,13 @@ const userSchema = new mongoose.Schema({
       ref: "User",
     },
   ],
+  retailerRequests: [
+    // Separate array for Wholesalers
+    {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+    },
+  ],
   // User verification status
   user_verified: { type: Boolean, default: false },
   mobile_verified: { type: Boolean, default: false },

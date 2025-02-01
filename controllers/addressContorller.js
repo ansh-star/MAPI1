@@ -4,8 +4,15 @@ const User = require("../models/User");
 const addUserAddress = async (req, res) => {
   const { id } = req.user;
   try {
+    const addresses = await User.findById(id).select("addressList").lean();
+
+    if (addresses.addressList.length >= 5) {
+      return res
+        .status(200)
+        .json({ success: false, message: "You can add only 5 addresses" });
+    }
+
     if (req.body.isDefault) {
-      const addresses = await User.findById(id).select("addressList").lean();
       await Address.updateMany(
         { _id: { $in: addresses.addressList } },
         { isDefault: false }

@@ -2,6 +2,7 @@ const Notification = require("../models/Nodtification");
 const Order = require("../models/Order");
 const Product = require("../models/Product");
 const User = require("../models/User");
+const Roles = require("../utils/roles");
 
 const placeOrder = async (req, res) => {
   const { id } = req.user;
@@ -59,6 +60,10 @@ const placeOrder = async (req, res) => {
     await User.findByIdAndUpdate(id, {
       $push: { notifications: notification._id },
     });
+    await User.updateMany(
+      { role: Roles.ADMIN },
+      { $push: { notifications: notification._id } }
+    );
     res.status(200).json({ success: true, order: savedOrder });
   } catch (error) {
     res.status(200).json({ success: false, message: error.message });

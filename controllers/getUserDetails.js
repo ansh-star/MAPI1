@@ -177,4 +177,71 @@ const getWholesalerRequest = async (req, res) => {
   }
 };
 
-module.exports = { userDetails, getCart, getWholesalerRequest };
+const getRetailerRequest = async (req, res) => {
+  const { id } = req.user;
+  const { limit, pageNumber = 1 } = req.query;
+  try {
+    const user = await User.aggregate([
+      { $match: { _id: new mongoose.Types.ObjectId(String(id)) } }, // Match the user by ID
+      {
+        $project: {
+          retailerRequests: {
+            $slice: [
+              "$retailerRequests",
+              parseInt(pageNumber) - 1, // Starting index
+              parseInt(limit) || 10, // Number of items to fetch (default 10)
+            ],
+          },
+        },
+      },
+      {
+        $lookup: {
+          from: "users", // Reference the User collection
+          localField: "retailerRequests",
+          foreignField: "_id",
+          as: "retailerRequests",
+        },
+      },
+      {
+        $project: {
+          retailerRequests: {
+            $map: {
+              input: "$retailerRequests",
+              as: "request",
+              in: {
+                _id: "$$request._id",
+                shopOrHospitalName: "$$request.shopOrHospitalName",
+                dealershipLicenseNumber: "$$request.dealershipLicenseNumber",
+                delaershipLicenseImage: "$$request.dealershipLicenseImage",
+              },
+            },
+          },
+        },
+      },
+    ]);
+
+    if (!user) {
+      return res
+        .status(200)
+        .json({ success: false, message: "User not found" });
+    }
+
+    res.status(200).json({
+      success: true,
+      retailerRequests: (user.length > 0 && user[0].retailerRequests) || [],
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(200).json({
+      success: false,
+      message: "Error occurred while fetching wholesaler requests",
+    });
+  }
+};
+
+module.exports = {
+  userDetails,
+  getCart,
+  getWholesalerRequest,
+  getRetailerRequest,
+};
