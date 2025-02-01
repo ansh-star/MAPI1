@@ -2,6 +2,7 @@ const { default: mongoose } = require("mongoose");
 const Product = require("../models/Product");
 const User = require("../models/User");
 const Roles = require("../utils/roles");
+const { saveAndPushNotification } = require("./notificationController");
 const updateAdminDetails = async (req, res) => {
   const { id, role } = req.user;
 
@@ -174,6 +175,12 @@ const verifyUser = async (req, res) => {
         .json({ success: false, message: "User not found" });
     }
 
+    saveAndPushNotification(
+      userId,
+      "User Verified",
+      "Your ID have been verified successfully"
+    );
+
     // respond with success
     return res.status(200).json({
       success: true,
@@ -199,12 +206,10 @@ const addProductWholesaler = async (req, res) => {
         { new: true }
       );
       if (response) {
-        return res
-          .status(200)
-          .json({
-            success: true,
-            message: "Product already added to wholesaler",
-          });
+        return res.status(200).json({
+          success: true,
+          message: "Product already added to wholesaler",
+        });
       }
     }
     return res
@@ -228,6 +233,11 @@ const makeAdmin = async (req, res) => {
         .status(200)
         .json({ success: false, message: "User not found" });
     }
+    saveAndPushNotification(
+      id,
+      "Role Updated",
+      "You have been promoted to an Admin"
+    );
     res.status(200).json({ success: true, message: "User is now an admin" });
   } catch (error) {
     console.error(error);

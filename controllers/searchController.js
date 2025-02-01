@@ -2,7 +2,7 @@ const Product = require("../models/Product");
 const User = require("../models/User");
 
 const searchProducts = async (req, res) => {
-  const { search, page = 1, limit = 50 } = req.query;
+  const { search, page = 1, limit = 50, sort } = req.query;
 
   let query = {};
   if (search) {
@@ -42,6 +42,12 @@ const searchProducts = async (req, res) => {
       .lean();
 
     const total = recommendedProducts.length;
+
+    if (sort === "price_low_to_high") {
+      products.sort((a, b) => a.mrp - b.mrp);
+    } else if (sort === "price_high_to_low") {
+      products.sort((a, b) => a.mrp - b.mrp).reverse();
+    }
 
     // If no products match the search, return a status message and an empty array
     if (products.length === 0 && total === 0) {
@@ -119,6 +125,11 @@ const recommendedProducts = async (req, res) => {
       .limit(parseInt(limit))
       .lean();
 
+    if (sort === "price_low_to_high") {
+      recommendedProducts.sort((a, b) => a.mrp - b.mrp);
+    } else if (sort === "price_high_to_low") {
+      recommendedProducts.sort((a, b) => a.mrp - b.mrp).reverse();
+    }
     // Return the response
     res.status(200).json({
       success: true,

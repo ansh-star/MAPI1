@@ -53,7 +53,7 @@ const placeOrder = async (req, res) => {
     const notification = new Notification({
       user_id: id,
       Notification_title: "Order Placed",
-      Notification_body: `Your order (#${order._id}) has been placed`,
+      Notification_body: `Order (#${order._id}) has been placed`,
       Date: Date.now(),
     });
     await notification.save();

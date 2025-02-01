@@ -32,4 +32,22 @@ const deleteNotifications = async (req, res) => {
   }
 };
 
-module.exports = { getNotifications, deleteNotifications };
+const saveAndPushNotification = async (user_id, title, body) => {
+  const notification = new Notification({
+    user_id,
+    Notification_title: title,
+    Notification_body: body,
+  });
+
+  await notification.save();
+
+  await User.findByIdAndUpdate(user_id, {
+    $push: { notifications: notification._id },
+  });
+};
+
+module.exports = {
+  getNotifications,
+  deleteNotifications,
+  saveAndPushNotification,
+};

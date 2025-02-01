@@ -1,5 +1,6 @@
 const Address = require("../models/Address");
 const User = require("../models/User");
+const { saveAndPushNotification } = require("./notificationController");
 
 const addUserAddress = async (req, res) => {
   const { id } = req.user;
@@ -33,12 +34,16 @@ const addUserAddress = async (req, res) => {
 
     await newAddress.save();
 
-    return res.status(201).json({
+    saveAndPushNotification(id, "Address Added", "Address has been added");
+
+    res.status(201).json({
       success: true,
       message: "Address added successfully",
     });
   } catch (error) {
-    res.status(200).json({ success: false, message: "Error adding address" });
+    return res
+      .status(200)
+      .json({ success: false, message: "Error adding address" });
   }
 };
 const updateUserAddress = async (req, res) => {
@@ -59,10 +64,17 @@ const updateUserAddress = async (req, res) => {
       { ...req.body },
       { new: true }
     );
-    if (address)
+    if (address) {
+      saveAndPushNotification(
+        userId,
+        "Address Updated",
+        "Address has been updated"
+      );
+
       return res
         .status(200)
         .json({ success: true, message: "Address updated successfully" });
+    }
     return res
       .status(200)
       .json({ success: false, message: "Address does not exist" });
@@ -87,6 +99,11 @@ const deleteUserAddress = async (req, res) => {
           isDefault: true,
         });
       }
+      saveAndPushNotification(
+        id,
+        "Address Deleted",
+        "Address has been deleted"
+      );
       return res
         .status(200)
         .json({ success: true, message: "Address deleted successfully" });

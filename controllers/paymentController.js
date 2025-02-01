@@ -2,6 +2,7 @@ const crypto = require("crypto");
 const axios = require("axios");
 const Payment = require("../models/Payment");
 const Order = require("../models/Order");
+const { saveAndPushNotification } = require("./notificationController");
 
 let salt_key = "96434309-7796-489d-8924-ab56988a6076";
 let merchant_id = "PGTESTPAYUAT86";
@@ -73,6 +74,7 @@ const makePayment = async (req, res) => {
 
 const paymentStatus = async (req, res) => {
   const orderId = req.query.id; // Extract orderId from the request body
+  const { id } = req.user;
   const merchantId = merchant_id;
   const keyIndex = 1;
   const string = `/pg/v1/status/${merchantId}/${orderId}` + salt_key;
@@ -111,6 +113,19 @@ const paymentStatus = async (req, res) => {
       }
     );
 
+    if (paymentStatus === "SUCCESS") {
+      saveAndPushNotification(
+        id,
+        "Payment Successful",
+        `Payment for order #${orderId} has been successful`
+      );
+    } else {
+      saveAndPushNotification(
+        id,
+        "Payment Failed",
+        `Payment for order #${orderId} has failed`
+      );
+    }
     const redirectUrl = response.data.success
       ? "http://localhost:5173/success"
       : "http://localhost:5173/fail";
