@@ -51,7 +51,6 @@ const verifyRole = (req, res, next) => {
 
 const verifyAdmin = async (req, res, next) => {
   const { role } = req.user;
-
   if (role === Roles.ADMIN) {
     next();
   } else {

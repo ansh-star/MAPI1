@@ -25,6 +25,7 @@ const {
   userDetails,
   getWholesalerRequest,
   getRetailerRequest,
+  getRetailers,
 } = require("../controllers/getUserDetails");
 const { searchMobileNumber } = require("../controllers/searchController");
 const {
@@ -75,6 +76,8 @@ router.get("/wholesaler", verifyAdmin, getWholesalerRequest);
 
 //get retailer requests
 router.get("/retailer", verifyAdmin, getRetailerRequest);
+
+router.get("/retailers",verifyAdmin,getRetailers)
 
 // Route to verify a user
 router.put("/verify-user", verifyAdmin, verifyUser);

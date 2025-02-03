@@ -238,10 +238,33 @@ const getRetailerRequest = async (req, res) => {
     });
   }
 };
-
+const getRetailers = async (req, res) => {
+  try {
+    // Fetching all retailers with necessary fields
+    const retailers = await User.find({ role: 2 }).select(
+      "fullName mobileNumber email shopOrHospitalName dealershipLicenseNumber addressList")
+    if (!retailers.length) {
+      return res.status(200).json({
+        success: false,
+        message: "No retailers found",
+      });
+    }
+    res.status(200).json({
+      success: true,
+      retailers,
+    });
+  } catch (error) {
+    console.error("Error fetching retailers:", error);
+    res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+    });
+  }
+};
 module.exports = {
   userDetails,
   getCart,
   getWholesalerRequest,
   getRetailerRequest,
+  getRetailers, // Add this export
 };
