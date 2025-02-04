@@ -226,7 +226,7 @@ const makeAdmin = async (req, res) => {
   try {
     const user = await User.findOneAndUpdate(
       { _id: id },
-      { role: Roles.ADMIN }
+      { role: Roles.ADMIN, user_verified: true }
     );
     if (!user) {
       return res
