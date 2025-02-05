@@ -245,29 +245,16 @@ const getRetailers = async (req, res) => {
     const retailers = await User.find({ role: 2 }).select(
       "fullName mobileNumber email shopOrHospitalName dealershipLicenseNumber addressList"
     );
-    if (!retailers.length) {
-      return res.status(200).json({
-        success: false,
-        message: "No retailers found",
-      });
-    }
-    res.status(200).json({
-      success: true,
-      retailers,
-    });
+    res.status(200).json({ success: true, retailers });
   } catch (error) 
   {
-    console.error("Error fetching retailers:", error);
-    res.status(500).json({
-      success: false,
-      message: "Internal Server Error",
-    });
+    res.status(500).json({ success: false, message: "Server error", error });
   }
 };
 
 const getWholesalers = async (req, res) => {
   try {
-    // Fetch wholesalers (role: 0) with selected details
+    // Fetch wholesalers (role: 1) with selected details
     const wholesalers = await User.find({ role: 1 })
       .select("fullName shopOrHospitalName mobileNumber location dealershipLicenseNumber  user_verified mobile_verified") // Only necessary fields
     res.status(200).json({ success: true, wholesalers });
