@@ -253,7 +253,8 @@ const getRetailers = async (req, res) => {
       success: true,
       retailers,
     });
-  } catch (error) {
+  } catch (error) 
+  {
     console.error("Error fetching retailers:", error);
     res.status(500).json({
       success: false,
@@ -261,10 +262,23 @@ const getRetailers = async (req, res) => {
     });
   }
 };
+
+const getWholesalers = async (req, res) => {
+  try {
+    // Fetch wholesalers (role: 0) with selected details
+    const wholesalers = await User.find({ role: 1 })
+      .select("fullName shopOrHospitalName mobileNumber location dealershipLicenseNumber  user_verified mobile_verified") // Only necessary fields
+    res.status(200).json({ success: true, wholesalers });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Server error", error });
+  }
+};
+
 module.exports = {
   userDetails,
   getCart,
   getWholesalerRequest,
   getRetailerRequest,
   getRetailers, // Add this export
+  getWholesalers,
 };
