@@ -249,7 +249,7 @@ const getRetailers = async (req, res) => {
 
     // Fetching retailers with pagination
     const retailers = await User.find({ role: 2 })
-      .select("fullName mobileNumber email shopOrHospitalName dealershipLicenseNumber addressList")
+      .select("fullName mobileNumber email shopOrHospitalName dealershipLicenseNumber user_verified mobile_verified location")
       .skip((page - 1) * limit)
       .limit(limit);
 
