@@ -241,27 +241,61 @@ const getRetailerRequest = async (req, res) => {
 };
 const getRetailers = async (req, res) => {
   try {
-    // Fetching all retailers with necessary fields
-    const retailers = await User.find({ role: 2 }).select(
-      "fullName mobileNumber email shopOrHospitalName dealershipLicenseNumber addressList"
-    );
-    res.status(200).json({ success: true, retailers });
-  } catch (error) 
-  {
-    res.status(500).json({ success: false, message: "Server error", error });
-  }
-};
+    let { page = 1, limit = 10 } = req.query;
 
-const getWholesalers = async (req, res) => {
-  try {
-    // Fetch wholesalers (role: 1) with selected details
-    const wholesalers = await User.find({ role: 1 })
-      .select("fullName shopOrHospitalName mobileNumber location dealershipLicenseNumber  user_verified mobile_verified") // Only necessary fields
-    res.status(200).json({ success: true, wholesalers });
+    // Convert page and limit to integers
+    page = parseInt(page);
+    limit = parseInt(limit);
+
+    // Fetching retailers with pagination
+    const retailers = await User.find({ role: 2 })
+      .select("fullName mobileNumber email shopOrHospitalName dealershipLicenseNumber addressList")
+      .skip((page - 1) * limit)
+      .limit(limit);
+
+    // Count total retailers for pagination metadata
+    const totalRetailers = await User.countDocuments({ role: 2 });
+
+    res.status(200).json({
+      success: true,
+      retailers,
+      totalPages: Math.ceil(totalRetailers / limit),
+      currentPage: page,
+      totalRetailers
+    });
   } catch (error) {
     res.status(500).json({ success: false, message: "Server error", error });
   }
 };
+const getWholesalers = async (req, res) => {
+  try {
+    let { page = 1, limit = 10 } = req.query;
+
+    // Convert page and limit to integers
+    page = parseInt(page);
+    limit = parseInt(limit);
+
+    // Fetch wholesalers with pagination
+    const wholesalers = await User.find({ role: 1 })
+      .select("fullName shopOrHospitalName mobileNumber location dealershipLicenseNumber user_verified mobile_verified")
+      .skip((page - 1) * limit)
+      .limit(limit);
+
+    // Count total wholesalers for pagination metadata
+    const totalWholesalers = await User.countDocuments({ role: 1 });
+
+    res.status(200).json({
+      success: true,
+      wholesalers,
+      totalPages: Math.ceil(totalWholesalers / limit),
+      currentPage: page,
+      totalWholesalers
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Server error", error });
+  }
+};
+
 
 const getDeliveryPartner = async (req, res) => {
   try {
