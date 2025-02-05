@@ -135,7 +135,11 @@ const assignToDeliveryPartner = async (req, res) => {
   const { deliveryPartner, order_id } = req.body;
   try {
     const order = await Order.findById(order_id);
-    console.log(order);
+    if (!order) {
+      return res
+        .status(200)
+        .json({ success: false, message: "Order not found" });
+    }
     if (!order.assigned || order.assigned === "") {
       var assignOrder = await User.findByIdAndUpdate(
         deliveryPartner,
@@ -199,10 +203,36 @@ const cancelOrder = async (req, res) => {
     res.status(200).json({ success: false, message: error.message });
   }
 };
+
+const placeInCart = async (req, res) => {
+  const { id } = req.user;
+  const { order_id } = req.body;
+  try {
+    const order = await Order.findById(order_id).select("products");
+    console.log(order.products);
+    const user = await User.findByIdAndUpdate(
+      id,
+      { cart: order.products },
+      { new: true }
+    );
+    if (!user) {
+      return res
+        .status(200)
+        .json({ success: false, message: "User not found" });
+    }
+    res
+      .status(200)
+      .json({ success: true, message: "Order placed in cart successfully" });
+  } catch (error) {
+    res.status(200).json({ success: false, message: error.message });
+  }
+};
+
 module.exports = {
   placeOrder,
   getOrders,
   updateOrder,
   assignToDeliveryPartner,
   cancelOrder,
+  placeInCart,
 };

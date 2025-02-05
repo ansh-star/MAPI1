@@ -1,6 +1,7 @@
 const { default: mongoose } = require("mongoose");
 const User = require("../models/User");
 const Product = require("../models/Product");
+const Roles = require("../utils/roles");
 
 const userDetails = async (req, res) => {
   try {
@@ -242,7 +243,8 @@ const getRetailers = async (req, res) => {
   try {
     // Fetching all retailers with necessary fields
     const retailers = await User.find({ role: 2 }).select(
-      "fullName mobileNumber email shopOrHospitalName dealershipLicenseNumber addressList")
+      "fullName mobileNumber email shopOrHospitalName dealershipLicenseNumber addressList"
+    );
     if (!retailers.length) {
       return res.status(200).json({
         success: false,
@@ -274,11 +276,21 @@ const getWholesalers = async (req, res) => {
   }
 };
 
+const getDeliveryPartner = async (req, res) => {
+  try {
+    const deliveryPartner = await User.find({ role: Roles.DELIVERY_PARTNER });
+
+    res.status(200).json({ success: true, partners: deliveryPartner });
+  } catch (error) {
+    res.status(500).json({ success: true, message: error.message });
+  }
+};
 module.exports = {
   userDetails,
   getCart,
   getWholesalerRequest,
   getRetailerRequest,
-  getRetailers, // Add this export
+  getRetailers, 
   getWholesalers,
+  getDeliveryPartner,
 };

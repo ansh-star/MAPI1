@@ -7,7 +7,8 @@ const orderRoutes = require("./orderRoutes");
 const categoryRoutes = require("./categoryRoutes");
 const paymentRoutes = require("./paymentRoutes");
 const notificationRoutes = require("./notificationRoutes");
-const { verifyToken } = require("../utils/tokenGenerator");
+const { verifyToken, verifyAdmin } = require("../utils/tokenGenerator");
+const { getDeliveryPartner } = require("../controllers/getUserDetails");
 const router = express.Router();
 
 // For user signup and login
@@ -36,5 +37,8 @@ router.use("/payment", paymentRoutes);
 
 //notification routes
 router.use("/notifications", notificationRoutes);
+
+// get delivery partners
+router.get("/delivery-partners", verifyAdmin, getDeliveryPartner);
 
 module.exports = router;
