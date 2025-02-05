@@ -5,7 +5,7 @@ const Roles = require("../utils/roles");
 
 const getProducts = async (req, res) => {
   // Extract pagination parameters from the request body
-  const { pageNumber = 1, limit = 100 } = req.query;
+  const { pageNumber = 1, limit = 100, sort } = req.query;
   try {
     const totalDocuments = await Product.estimatedDocumentCount({});
     const randomSkip = Math.floor(Math.random() * (totalDocuments - 1000)); // Skip a random number of documents before selecting 1000 consecutive
@@ -18,6 +18,12 @@ const getProducts = async (req, res) => {
     }
 
     const products = await Product.aggregate(query);
+
+    if (sort === "price_low_to_high") {
+      products.sort((a, b) => a.price - b.price);
+    } else if (sort === "price_high_to_low") {
+      products.sort((a, b) => b.price - a.price);
+    }
 
     // Respond with the products found
     return res.status(200).json({ success: true, products, totalDocuments });
