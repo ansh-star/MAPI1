@@ -1,4 +1,3 @@
-const { default: mongoose } = require("mongoose");
 const Product = require("../models/Product");
 const User = require("../models/User");
 const Roles = require("../utils/roles");
@@ -20,9 +19,9 @@ const getProducts = async (req, res) => {
     const products = await Product.aggregate(query);
 
     if (sort === "price_low_to_high") {
-      products.sort((a, b) => a.price - b.price);
+      products.sort((a, b) => a.mrp - b.mrp);
     } else if (sort === "price_high_to_low") {
-      products.sort((a, b) => b.price - a.price);
+      products.sort((a, b) => b.mrp - a.mrp);
     }
 
     // Respond with the products found
