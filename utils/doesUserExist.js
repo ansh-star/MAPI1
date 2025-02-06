@@ -7,24 +7,17 @@ const checkSchema = async (mobileNumber) => {
   if (obj) return obj.toObject();
   return undefined;
 };
-const doesAdminExist = async (mobileNumber) => {
-  const admin = await checkSchema(mobileNumber);
-  if (
-    admin &&
-    (admin.role === Roles.ADMIN || admin.role === Roles.WHOLESALER)
-  ) {
-    return true;
-  }
-  return false;
-};
 const doesUserExist = async (mobileNumber, role) => {
   const user = await checkSchema(mobileNumber, User);
-  if (role) {
+  if (role === "website") {
     if (user && (user.role === Roles.ADMIN || user.role === Roles.WHOLESALER)) {
       return true;
     }
   } else {
-    if (user) {
+    if (
+      user &&
+      (user.role === Roles.RETAILER || user.role === Roles.WHOLESALER)
+    ) {
       return true;
     }
   }
@@ -32,4 +25,4 @@ const doesUserExist = async (mobileNumber, role) => {
   return false;
 };
 
-module.exports = { doesAdminExist, doesUserExist };
+module.exports = { doesUserExist };

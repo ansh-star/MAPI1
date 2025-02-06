@@ -74,21 +74,21 @@ const addProductToCart = async (req, res) => {
     await user.save();
 
     const notification = new Notification({
-      user: id,
-      title: "Product added to cart",
-      content:"Products added to cart successfully",
-    })
+      user_id: id,
+      Notification_title: "Product added to cart",
+      Notification_body: "Products added to cart successfully",
+    });
 
     await notification.save();
 
-    return res
+    res
       .status(200)
       .json({ success: true, message: "Product added to cart successfully" });
   } catch (error) {
     console.error(error);
     res
       .status(200)
-      .json({ success: false, error: "Failed to add product to cart" });
+      .json({ success: false, message: "Failed to add product to cart" });
   }
 };
 
