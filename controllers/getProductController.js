@@ -18,10 +18,12 @@ const getProducts = async (req, res) => {
 
     const products = await Product.aggregate(query);
 
-    if (sort === "price_low_to_high") {
-      products.sort((a, b) => a.mrp - b.mrp);
-    } else if (sort === "price_high_to_low") {
-      products.sort((a, b) => b.mrp - a.mrp);
+    if (sort) {
+      if (sort === "price_low_to_high") {
+        products.sort((a, b) => a.mrp - b.mrp);
+      } else if (sort === "price_high_to_low") {
+        products.sort((a, b) => b.mrp - a.mrp);
+      }
     }
 
     // Respond with the products found

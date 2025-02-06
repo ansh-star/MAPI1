@@ -43,10 +43,12 @@ const searchProducts = async (req, res) => {
 
     const total = recommendedProducts.length;
 
-    if (sort === "price_low_to_high") {
-      products.sort((a, b) => a.mrp - b.mrp);
-    } else if (sort === "price_high_to_low") {
-      products.sort((a, b) => a.mrp - b.mrp).reverse();
+    if (sort) {
+      if (sort === "price_low_to_high") {
+        products.sort((a, b) => a.mrp - b.mrp);
+      } else if (sort === "price_high_to_low") {
+        products.sort((a, b) => a.mrp - b.mrp).reverse();
+      }
     }
 
     // If no products match the search, return a status message and an empty array
@@ -89,7 +91,7 @@ const searchProducts = async (req, res) => {
 const recommendedProducts = async (req, res) => {
   try {
     const { productId } = req.params;
-    const { limit = 10 } = req.query;
+    const { limit = 10, sort } = req.query;
 
     // Use projection to fetch only necessary fields
     const targetProduct = await Product.findById(productId).lean();
@@ -125,11 +127,14 @@ const recommendedProducts = async (req, res) => {
       .limit(parseInt(limit))
       .lean();
 
-    if (sort === "price_low_to_high") {
-      recommendedProducts.sort((a, b) => a.mrp - b.mrp);
-    } else if (sort === "price_high_to_low") {
-      recommendedProducts.sort((a, b) => a.mrp - b.mrp).reverse();
+    if (sort) {
+      if (sort === "price_low_to_high") {
+        recommendedProducts.sort((a, b) => a.mrp - b.mrp);
+      } else if (sort === "price_high_to_low") {
+        recommendedProducts.sort((a, b) => a.mrp - b.mrp).reverse();
+      }
     }
+
     // Return the response
     res.status(200).json({
       success: true,
@@ -167,11 +172,15 @@ const getProductByCategory = async (req, res) => {
       .lean();
 
     const total = products.length;
-    if (sort === "price_low_to_high") {
-      products.sort((a, b) => a.mrp - b.mrp);
-    } else if (sort === "price_high_to_low") {
-      products.sort((a, b) => a.mrp - b.mrp).reverse();
+
+    if (sort) {
+      if (sort === "price_low_to_high") {
+        products.sort((a, b) => a.mrp - b.mrp);
+      } else if (sort === "price_high_to_low") {
+        products.sort((a, b) => a.mrp - b.mrp).reverse();
+      }
     }
+
     res.json({
       success: true,
       message: "Products retrieved successfully",
