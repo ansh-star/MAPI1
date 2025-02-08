@@ -6,11 +6,17 @@ const {
   assignToDeliveryPartner,
   cancelOrder,
   placeInCart,
+  getRefundOrders,
+  updateDeliveryStatus,
 } = require("../controllers/orderController");
 const {
   verifyDeliveryPartner,
   verifyAdmin,
 } = require("../utils/tokenGenerator");
+const {
+  getExpiryItems,
+  replaceRefundExpiredItems,
+} = require("../controllers/expiryController");
 
 const router = express.Router();
 
@@ -26,4 +32,11 @@ router.put("/cancel", cancelOrder);
 
 router.post("/re-order", placeInCart);
 
+router.get("/expire-items", getExpiryItems);
+
+router.post("/return-refund-expired-items", replaceRefundExpiredItems);
+
+router.get("/refund-order", getRefundOrders);
+
+router.put("/delivery-status", updateDeliveryStatus);
 module.exports = router;

@@ -10,6 +10,11 @@ const placeOrder = async (req, res) => {
     const cartData = await User.findById(id, { cart: 1 })
       .populate("cart.productId")
       .lean();
+    if (!cartData) {
+      return res
+        .status(200)
+        .json({ success: false, message: "User not found" });
+    }
     const orderData = req.body;
     orderData.products = cartData.cart;
     orderData.user_id = id;
@@ -162,6 +167,11 @@ const assignToDeliveryPartner = async (req, res) => {
         $push: { notifications: notification._id },
       });
 
+      await User.updateMany(
+        { role: Roles.ADMIN },
+        { $pull: { orders: order_id } }
+      );
+
       return res
         .status(200)
         .json({ success: true, message: "Order assigned to delivery partner" });
@@ -227,6 +237,36 @@ const placeInCart = async (req, res) => {
     res.status(200).json({ success: false, message: error.message });
   }
 };
+const getRefundOrders = async (req, res) => {
+  const { id } = req.user;
+  try {
+    const user = await User.findById(id).populate("refundOrders");
+    res.status(200).json({ success: true, orders: user?.refundOrders || [] });
+  } catch (error) {
+    res.status(200).json({ success: false, message: error.message });
+  }
+};
+
+const updateDeliveryStatus = async (req, res) => {
+  const { order_id, otp } = req.body;
+  try {
+    const order = await Order.findById(order_id, { order_otp: 1 });
+    if (!order) {
+      return res
+        .status(200)
+        .json({ success: false, message: "Order not found" });
+    }
+    if (order.order_otp === otp) {
+      await Order.findByIdAndUpdate(order_id, { order_status: "delivered" });
+      return res
+        .status(200)
+        .json({ success: true, message: "Order delivered successfully" });
+    }
+    return res.status(200).json({ success: false, message: "Invalid OTP" });
+  } catch (error) {
+    res.status(200).json({ success: false, message: error.message });
+  }
+};
 
 module.exports = {
   placeOrder,
@@ -235,4 +275,6 @@ module.exports = {
   assignToDeliveryPartner,
   cancelOrder,
   placeInCart,
+  getRefundOrders,
+  updateDeliveryStatus,
 };
