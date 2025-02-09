@@ -16,13 +16,9 @@ const convertAmount = (amount) => {
 
   const decimalPlaces = amountStr.split(".")[1].length;
 
-  if (decimalPlaces === 3) {
-    return Math.round(amount * 1000); // 3 decimal places → multiply by 1000
-  } else if (decimalPlaces === 2 || decimalPlaces === 1) {
-    return Math.round(amount * 100); // 2 or 1 decimal places → multiply by 100
-  } else if (decimalPlaces >= 4) {
-    return Math.round(amount * 10000); // 4+ decimal places → multiply by 10000
-  }
+  if (decimalPlaces === 2) {
+    return Math.round(amount * 100); // 3 decimal places → multiply by 1000
+  } 
 };
 
 const makePayment = async (req, res) => {
