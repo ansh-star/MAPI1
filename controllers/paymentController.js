@@ -15,7 +15,7 @@ const makePayment = async (req, res) => {
       merchantId: merchant_id,
       merchantTransactionId: orderId,
       name: orderId,
-      amount: amount * 100,
+      amount: Math.round(amount * 100),
       redirectUrl: `http://localhost:8000/status?id=${orderId}`,
       redirectMode: "POST",
       mobileNumber: phone,
