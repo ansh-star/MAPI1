@@ -19,7 +19,7 @@ const convertAmount = (amount) => {
   if (decimalPlaces === 2) {
     return Math.round(amount * 100); // 3 decimal places → multiply by 1000
   }else if (decimalPlaces===1){
-    return Math.round(amount*10000);
+    return Math.round(amount*100);
   } 
 };
 
