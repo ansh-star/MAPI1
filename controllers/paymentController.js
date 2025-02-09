@@ -7,15 +7,34 @@ const { saveAndPushNotification } = require("./notificationController");
 let salt_key = "96434309-7796-489d-8924-ab56988a6076";
 let merchant_id = "PGTESTPAYUAT86";
 
+const convertAmount = (amount) => {
+  const amountStr = amount.toString();
+
+  if (!amountStr.includes(".")) {
+    return Math.round(amount * 100); // Whole number case (e.g., 4 → 400)
+  }
+
+  const decimalPlaces = amountStr.split(".")[1].length;
+
+  if (decimalPlaces === 3) {
+    return Math.round(amount * 1000); // 3 decimal places → multiply by 1000
+  } else if (decimalPlaces === 2 || decimalPlaces === 1) {
+    return Math.round(amount * 100); // 2 or 1 decimal places → multiply by 100
+  } else if (decimalPlaces >= 4) {
+    return Math.round(amount * 10000); // 4+ decimal places → multiply by 10000
+  }
+};
+
 const makePayment = async (req, res) => {
   try {
     const { amount, phone, orderId } = req.body;
+    const convertedAmount=convertAmount(amount);
 
     const data = {
       merchantId: merchant_id,
       merchantTransactionId: orderId,
       name: orderId,
-      amount: Math.round(amount * 100),
+      amount: convertedAmount,
       redirectUrl: `http://localhost:8000/status?id=${orderId}`,
       redirectMode: "POST",
       mobileNumber: phone,
