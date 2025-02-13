@@ -56,7 +56,7 @@ const replaceRefundExpiredItems = async (req, res) => {
 
       res.status(200).json({
         success: true,
-        message: "Item is being returned",
+        message: "Item is being replaced",
         replaceOrder: order,
       });
     } else {

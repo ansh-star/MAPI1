@@ -3,6 +3,7 @@ const axios = require("axios");
 const Payment = require("../models/Payment");
 const Order = require("../models/Order");
 const { saveAndPushNotification } = require("./notificationController");
+const User = require("../models/User");
 
 let salt_key = "96434309-7796-489d-8924-ab56988a6076";
 let merchant_id = "PGTESTPAYUAT86";
@@ -18,16 +19,21 @@ const convertAmount = (amount) => {
 
   if (decimalPlaces === 2) {
     return Math.round(amount * 100); // 3 decimal places → multiply by 1000
-  }else if (decimalPlaces===1){
-    return Math.round(amount*100);
-  } 
+  } else if (decimalPlaces === 1) {
+    return Math.round(amount * 100);
+  }
 };
 
 const makePayment = async (req, res) => {
   try {
-    const { amount, phone, orderId } = req.body;
-    const convertedAmount=convertAmount(amount);
+    const { id } = req.user;
+    let { amount, phone, orderId } = req.body;
+    const convertedAmount = convertAmount(amount);
 
+    if (!phone) {
+      const user = await User.findById(id, { mobileNumber: 1 });
+      phone = user.mobileNumber;
+    }
     const data = {
       merchantId: merchant_id,
       merchantTransactionId: orderId,
@@ -80,8 +86,8 @@ const makePayment = async (req, res) => {
       });
     }
   } catch (error) {
-    console.error("Error:", error);
-    res.status(500).json({
+    console.error("Error:", error.message);
+    res.status(200).json({
       success: false,
       message: "Internal Server Error",
       error: error.message,

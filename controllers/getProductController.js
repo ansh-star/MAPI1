@@ -4,13 +4,15 @@ const Roles = require("../utils/roles");
 
 const getProducts = async (req, res) => {
   // Extract pagination parameters from the request body
-  const { pageNumber = 1, limit = 100, sort } = req.query;
+  const { page = 1, limit = 100, sort } = req.query;
   try {
     const totalDocuments = await Product.estimatedDocumentCount({});
-    const randomSkip = Math.floor(Math.random() * (totalDocuments - 1000)); // Skip a random number of documents before selecting 1000 consecutive
+    // const randomSkip = Math.floor(Math.random() * (totalDocuments - 1000)); // Skip a random number of documents before selecting 1000 consecutive
+    // { $match: { $expr: { $gt: [{ $size: "$Image_URLS" }, 0] } } },
+    // { $sample: { size: parseInt(limit) } },
     let query = [
-      { $match: { $expr: { $gt: [{ $size: "$Image_URLS" }, 0] } } },
-      { $sample: { size: parseInt(limit) } },
+      { $skip: (parseInt(page) - 1) * parseInt(limit) },
+      { $limit: parseInt(limit) },
     ];
     if (Object.keys(req.body).length !== 0) {
       query.push({ $project: req.body });
@@ -53,7 +55,7 @@ const getProduct = async (req, res) => {
 const getMyProducts = async (req, res) => {
   const { id } = req.user;
 
-  const { pageNumber, limit } = req.query;
+  const { t } = req.query;
   try {
     // Fetch user and their products with pagination for WHOLESALER
     const user = await User.findOne({
