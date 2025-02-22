@@ -81,7 +81,7 @@ const updateUserDetails = async (req, res) => {
       });
     }
     // Respond with success
-    res.status(201).json({
+    res.status(200).json({
       success: true,
       message: "User updated successfully!",
       user: updatedUser.toObject(),

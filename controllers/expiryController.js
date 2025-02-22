@@ -2,26 +2,43 @@ const Order = require("../models/Order");
 const Product = require("../models/Product");
 const User = require("../models/User");
 const Roles = require("../utils/roles");
+const { saveAndPushNotification } = require("./notificationController");
 
 const getExpiryItems = async (req, res) => {
   const { id } = req.user;
   try {
-    const orders = await User.findById(id, { orders: 1 }).populate({
+    const orders = await User.findById(id, {
+      orders: 1,
+      expiredOrders: 1,
+    }).populate({
       path: "orders",
       populate: {
         path: "products.productId", // Ensure the correct path inside orders
       },
     });
     const products = [];
-    orders.orders.forEach((order) => {
-      order.products.forEach((product) => {
-        if (
-          product.productId.Expiry_Date - Date.now() <
-          2 * 30 * 24 * 60 * 60 * 1000
-        ) {
-          products.push(product);
-        }
-      });
+    // console.log(orders);
+    orders.orders?.forEach((order) => {
+      // console.log(order);
+      if (
+        order.order_status !== "Replacing" &&
+        order.order_status !== "Replaced" &&
+        order.order_status !== "Refunded"
+      ) {
+        const orderId = order._id.toString();
+        order.products.forEach((product) => {
+          if (
+            product.productId.Expiry_Date - Date.now() <
+              2 * 30 * 24 * 60 * 60 * 1000 &&
+            !orders.expiredOrders.includes(
+              orderId + product.productId._id.toString()
+            )
+          ) {
+            const newProduct = { ...product.toObject(), order_id: order._id };
+            products.push(newProduct);
+          }
+        });
+      }
     });
     res.status(200).json({ success: true, products });
   } catch (error) {
@@ -36,8 +53,12 @@ const replaceRefundExpiredItems = async (req, res) => {
   try {
     let populateProducts = [];
     let n = products.length;
+    const expiredOrders = [];
     for (let i = 0; i < n; i++) {
       const pro = await Product.findById(products[i].productId);
+      expiredOrders.push(
+        products[i].order_id.toString() + products[i].productId.toString()
+      );
       populateProducts.push({ productId: pro, quantity: products[i].quantity });
     }
     if (replacingOrder) {
@@ -52,7 +73,10 @@ const replaceRefundExpiredItems = async (req, res) => {
 
       await order.save();
 
-      await User.updateMany({ role: Roles.ADMIN }, { orders: order._id });
+      await User.updateMany(
+        { role: Roles.ADMIN },
+        { $push: { orders: order._id } }
+      );
 
       res.status(200).json({
         success: true,
@@ -79,7 +103,10 @@ const replaceRefundExpiredItems = async (req, res) => {
 
       await order.save();
 
-      await User.updateMany({ role: Roles.ADMIN }, { refundOrders: order._id });
+      await User.updateMany(
+        { role: Roles.ADMIN },
+        { $push: { orders: order._id } }
+      );
 
       res.status(200).json({
         success: true,
@@ -87,8 +114,15 @@ const replaceRefundExpiredItems = async (req, res) => {
         refundOrder: order,
       });
     }
+
+    await User.updateOne({ _id: id }, { $push: { expiredOrders } });
+    saveAndPushNotification(
+      id,
+      "Order Status",
+      "Your return/replace request is under review."
+    );
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    res.status(200).json({ success: false, message: error.message });
   }
 };
 

@@ -37,6 +37,7 @@ router.get("/my", getMyProducts);
 // get product by category
 router.get("/category", getProductByCategory);
 
+// get product by productId
 router.get("/:productId", getProduct);
 
 // delete product from list of wholesaler

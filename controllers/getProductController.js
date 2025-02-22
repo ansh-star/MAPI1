@@ -29,7 +29,15 @@ const getProducts = async (req, res) => {
     }
 
     // Respond with the products found
-    return res.status(200).json({ success: true, products, totalDocuments });
+    return res
+      .status(200)
+      .json({
+        success: true,
+        products,
+        totalDocuments,
+        page,
+        totalPage: totalDocuments / limit,
+      });
   } catch (error) {
     console.error(error.message);
     return res.status(200).json({ success: false, message: error.message });

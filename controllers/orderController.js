@@ -37,9 +37,12 @@ const placeOrder = async (req, res) => {
       order_discount +=
         ((pro.mrp * pro.discount) / 100) * cartData.cart[i].quantity;
     }
-    orderData.order_amount = order_amount;
-    orderData.order_discount = order_discount;
-    orderData.order_total_amount = order_amount - order_discount + 40;
+    orderData.order_amount = Math.round(order_amount, 3);
+    orderData.order_discount = Math.round(order_discount, 3);
+    orderData.order_total_amount = Math.round(
+      order_amount - order_discount + 40,
+      3
+    );
     orderData.order_payment_status = "unpaid";
     orderData.order_payment_method = "UPI";
     if (req.body.order_payment_id) {

@@ -67,6 +67,7 @@ const userSchema = new mongoose.Schema({
       ref: "Order",
     },
   ],
+  expiredOrders: [String],
 });
 
 module.exports = mongoose.model("User", userSchema);
