@@ -1,5 +1,8 @@
 const express = require("express");
-const { deleteProductFromCart } = require("../controllers/deleteController");
+const {
+  deleteProductFromCart,
+  clearCart,
+} = require("../controllers/deleteController");
 const { addProductToCart } = require("../controllers/addController");
 const { getCart } = require("../controllers/getUserDetails");
 
@@ -10,5 +13,7 @@ router.get("", getCart);
 router.post("", addProductToCart);
 
 router.delete("", deleteProductFromCart);
+
+router.delete("/clear", clearCart);
 
 module.exports = router;

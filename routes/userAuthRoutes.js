@@ -35,6 +35,7 @@ const {
   deleteUserAddress,
   getUserAddress,
 } = require("../controllers/addressContorller");
+const { resetPassword } = require("../controllers/resetController");
 
 const router = express.Router();
 
@@ -61,6 +62,9 @@ router.post(
 // Route to verify OTP
 router.post("/verify-otp", verifyOTP, loginUser);
 
+// Route to reset password
+router.post("/reset-password", verifyOTP, resetPassword);
+
 // Middleware to verify the token for subsequent routes
 router.use(verifyToken);
 
@@ -78,9 +82,9 @@ router.get("/wholesaler", verifyAdmin, getWholesalerRequest);
 //get retailer requests
 router.get("/retailer", verifyAdmin, getRetailerRequest);
 
-router.get("/retailers",verifyAdmin,getRetailers)
+router.get("/retailers", verifyAdmin, getRetailers);
 
-router.get("/wholesalers",verifyAdmin,getWholesalers);
+router.get("/wholesalers", verifyAdmin, getWholesalers);
 
 // Route to verify a user
 router.put("/verify-user", verifyAdmin, verifyUser);

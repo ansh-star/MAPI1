@@ -3,6 +3,7 @@ const Order = require("../models/Order");
 const Product = require("../models/Product");
 const User = require("../models/User");
 const Roles = require("../utils/roles");
+const { saveAndPushNotification } = require("./notificationController");
 
 const placeOrder = async (req, res) => {
   const { id } = req.user;
@@ -27,12 +28,15 @@ const placeOrder = async (req, res) => {
     if (n === 0) {
       return res.status(200).json({ success: false, message: "Cart is empty" });
     }
+    let firstProductName;
     for (let i = 0; i < n; i++) {
       const pro = await Product.findById(cartData.cart[i].productId, {
         mrp: 1,
         discount: 1,
       }).lean();
-
+      if (i === 0) {
+        firstProductName = pro.Medicine_name;
+      }
       order_amount += pro.mrp * cartData.cart[i].quantity;
       order_discount +=
         ((pro.mrp * pro.discount) / 100) * cartData.cart[i].quantity;
@@ -61,7 +65,11 @@ const placeOrder = async (req, res) => {
     const notification = new Notification({
       user_id: id,
       Notification_title: "Order Placed",
-      Notification_body: `Order (#${order._id}) has been placed`,
+      Notification_body: `Order of ${firstProductName}${
+        cartData?.cart?.length - 1 > 0
+          ? " + " + (cartData?.cart?.length - 1) + " "
+          : ""
+      }with order id (#${order._id}) has been placed. `,
       Date: Date.now(),
     });
     await notification.save();
@@ -114,11 +122,21 @@ const updateOrder = async (req, res) => {
       { ...req.body },
       { new: true }
     );
+    const firstProduct = await Product.findById(order.products[0].productId, {
+      Medicine_Name: 1,
+    }).lean();
+
     if (order) {
       const notification = new Notification({
         user_id: order.user_id,
         Notification_title: "Order status Update",
-        Notification_body: `Your order (#${order_id}) status has been updated to '${req.body?.order_status}'`,
+        Notification_body: `Your order of ${firstProduct.Medicine_Name}${
+          order?.products?.length - 1 > 0
+            ? " + " + (order?.products?.length - 1) + " "
+            : ""
+        }with order id of (#${order_id}) status has been updated to '${
+          req.body?.order_status
+        }'`,
       });
 
       await notification.save();
@@ -158,17 +176,21 @@ const assignToDeliveryPartner = async (req, res) => {
       await order.save();
     }
     if (assignOrder) {
-      const notification = new Notification({
-        user_id: deliveryPartner,
-        Notification_title: "New order assigned",
-        Notification_body: `Your have been assigned to a new order (#${order_id})`,
-      });
+      const firstProduct = await Product.findById(order.products[0].productId, {
+        Medicine_Name: 1,
+      }).lean();
 
-      await notification.save();
-
-      await User.findByIdAndUpdate(deliveryPartner, {
-        $push: { notifications: notification._id },
-      });
+      saveAndPushNotification(
+        deliveryPartner,
+        "New order assigned",
+        `Your have been assigned to a new order of ${
+          firstProduct.Medicine_Name
+        }${
+          order?.products?.length - 1 > 0
+            ? " + " + (order?.products?.length - 1) + " "
+            : ""
+        }with order id of (#${order_id})`
+      );
 
       await User.updateMany(
         { role: Roles.ADMIN },
@@ -196,15 +218,11 @@ const cancelOrder = async (req, res) => {
       await Order.findByIdAndUpdate(order_id, {
         order_status: "cancelled",
       });
-      const notification = new Notification({
-        user_id: id,
-        Notification_title: "Order Status Update",
-        Notification_body: `Your order (#${order_id}) has been cancelled`,
-      });
-      await notification.save();
-      await User.findByIdAndUpdate(id, {
-        $push: { notifications: notification._id },
-      });
+      saveAndPushNotification(
+        id,
+        "Order Status Update",
+        `Your order (#${order_id}) has been cancelled`
+      );
       return res
         .status(200)
         .json({ success: true, message: "Order cancelled successfully" });

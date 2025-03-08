@@ -170,6 +170,16 @@ const deleteUser = async (req, res) => {
     res.status(200).json({ success: false, message: "Server error" });
   }
 };
+const clearCart = async (req, res) => {
+  try {
+    await User.updateOne({ _id: req.user.id }, { $set: { cart: [] } });
+    res
+      .status(200)
+      .json({ success: true, message: "Cart cleared successfully" });
+  } catch (error) {
+    res.status(200).json({ success: false, message: error.message });
+  }
+};
 module.exports = {
   deleteUserDetails,
   deleteAdminDetails,
@@ -177,4 +187,5 @@ module.exports = {
   deleteProductFromCart,
   deleteWholesalerProduct,
   deleteUser,
+  clearCart,
 };
