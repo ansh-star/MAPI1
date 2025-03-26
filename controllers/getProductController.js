@@ -61,7 +61,7 @@ const getProduct = async (req, res) => {
 const getMyProducts = async (req, res) => {
   const { id } = req.user;
 
-  const { t } = req.query;
+  const { page = 1, limit = 10 } = req.query;
   try {
     // Fetch user and their products with pagination for WHOLESALER
     const user = await User.findOne({
@@ -69,7 +69,7 @@ const getMyProducts = async (req, res) => {
     }).populate({
       path: "products", // Specify the path to populate
       options: {
-        skip: ((parseInt(pageNumber) || 1) - 1) * 10,
+        skip: ((parseInt(page) || 1) - 1) * 10,
         limit: parseInt(limit),
       },
       select: { ...req.body },

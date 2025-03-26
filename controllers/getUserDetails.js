@@ -249,7 +249,9 @@ const getRetailers = async (req, res) => {
 
     // Fetching retailers with pagination
     const retailers = await User.find({ role: 2 })
-      .select("fullName mobileNumber email shopOrHospitalName dealershipLicenseNumber user_verified mobile_verified location")
+      .select(
+        "fullName mobileNumber email shopOrHospitalName dealershipLicenseNumber user_verified mobile_verified location"
+      )
       .skip((page - 1) * limit)
       .limit(limit);
 
@@ -261,7 +263,7 @@ const getRetailers = async (req, res) => {
       retailers,
       totalPages: Math.ceil(totalRetailers / limit),
       currentPage: page,
-      totalRetailers
+      totalRetailers,
     });
   } catch (error) {
     res.status(500).json({ success: false, message: "Server error", error });
@@ -277,7 +279,9 @@ const getWholesalers = async (req, res) => {
 
     // Fetch wholesalers with pagination
     const wholesalers = await User.find({ role: 1 })
-      .select("fullName shopOrHospitalName mobileNumber location dealershipLicenseNumber user_verified mobile_verified")
+      .select(
+        "fullName shopOrHospitalName mobileNumber location dealershipLicenseNumber user_verified mobile_verified"
+      )
       .skip((page - 1) * limit)
       .limit(limit);
 
@@ -289,13 +293,12 @@ const getWholesalers = async (req, res) => {
       wholesalers,
       totalPages: Math.ceil(totalWholesalers / limit),
       currentPage: page,
-      totalWholesalers
+      totalWholesalers,
     });
   } catch (error) {
     res.status(500).json({ success: false, message: "Server error", error });
   }
 };
-
 
 const getDeliveryPartner = async (req, res) => {
   try {
@@ -311,7 +314,7 @@ module.exports = {
   getCart,
   getWholesalerRequest,
   getRetailerRequest,
-  getRetailers, 
+  getRetailers,
   getWholesalers,
   getDeliveryPartner,
 };
