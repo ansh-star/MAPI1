@@ -33,9 +33,10 @@ const placeOrder = async (req, res) => {
       const pro = await Product.findById(cartData.cart[i].productId, {
         mrp: 1,
         discount: 1,
+        Medicine_Name: 1,
       }).lean();
       if (i === 0) {
-        firstProductName = pro.Medicine_name;
+        firstProductName = pro.Medicine_Name;
       }
       order_amount += pro.mrp * cartData.cart[i].quantity;
       order_discount +=
@@ -68,7 +69,7 @@ const placeOrder = async (req, res) => {
       Notification_body: `Order of ${firstProductName}${
         cartData?.cart?.length - 1 > 0
           ? " + " + (cartData?.cart?.length - 1) + " "
-          : ""
+          : " "
       }with order id (#${order._id}) has been placed. `,
       Date: Date.now(),
     });
@@ -133,7 +134,7 @@ const updateOrder = async (req, res) => {
         Notification_body: `Your order of ${firstProduct.Medicine_Name}${
           order?.products?.length - 1 > 0
             ? " + " + (order?.products?.length - 1) + " "
-            : ""
+            : " "
         }with order id of (#${order_id}) status has been updated to '${
           req.body?.order_status
         }'`,
