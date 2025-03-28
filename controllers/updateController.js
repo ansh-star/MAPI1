@@ -211,6 +211,11 @@ const addProductWholesaler = async (req, res) => {
           message: "Product already added to wholesaler",
         });
       }
+    } else {
+      return res.status(200).json({
+        success: false,
+        message: "Product already added to wholesaler",
+      });
     }
     return res
       .status(200)

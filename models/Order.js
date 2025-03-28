@@ -3,7 +3,15 @@ const Schema = mongoose.Schema;
 
 const orderSchema = new Schema({
   user_id: { type: Schema.Types.ObjectId, required: true, ref: "User" },
-  order_date: { type: Date, required: true, default: Date.now() },
+  order_date: {
+    type: Date,
+    required: true,
+    default: function () {
+      const now = new Date();
+      now.setSeconds(0, 0);
+      return now;
+    },
+  },
   order_status: { type: String, required: true },
   products: [
     {

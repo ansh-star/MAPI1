@@ -309,6 +309,50 @@ const getDeliveryPartner = async (req, res) => {
     res.status(500).json({ success: true, message: error.message });
   }
 };
+
+const getUserStats = async (req, res) => {
+  try {
+    if (req.user.role === Roles.ADMIN) {
+      var totalOrders = await Order.estimatedDocumentCount({});
+      var totalSales = await Order.aggregate([
+        { $group: { _id: null, totalSales: { $sum: "$totalAmount" } } },
+      ]);
+    } else {
+      var user = await User.findById(req.user.id).populate("orders");
+      var totalOrders = user.orders.length;
+      var totalSales = user.orders.reduce(
+        (acc, order) => acc + order.totalAmount,
+        0
+      );
+    }
+    const totalWholesalers = await User.estimatedDocumentCount({
+      role: Roles.WHOLESALER,
+    });
+    const totalRetailers = await User.estimatedDocumentCount({
+      role: Roles.RETAILER,
+    });
+    const totalDeliveryPartners = await User.estimatedDocumentCount({
+      role: Roles.DELIVERY_PARTNER,
+    });
+    const totalProducts = await Product.estimatedDocumentCount({});
+    return res.status(200).json({
+      success: true,
+      totalOrders,
+      totalSales: totalSales[0]?.totalSales || 0,
+      totalWholesalers,
+      totalRetailers,
+      totalDeliveryPartners,
+      totalProducts,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Server error",
+      error: error.message,
+    });
+  }
+};
+
 module.exports = {
   userDetails,
   getCart,
@@ -317,4 +361,5 @@ module.exports = {
   getRetailers,
   getWholesalers,
   getDeliveryPartner,
+  getUserStats,
 };

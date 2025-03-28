@@ -19,7 +19,6 @@ const placeOrder = async (req, res) => {
     const orderData = req.body;
     orderData.products = cartData.cart;
     orderData.user_id = id;
-    orderData.order_date = Date.now();
     orderData.order_status = "in process";
     orderData.order_delivery_charge = 40;
     var order_amount = 0;
@@ -71,7 +70,6 @@ const placeOrder = async (req, res) => {
           ? " + " + (cartData?.cart?.length - 1) + " "
           : " "
       }with order id (#${order._id}) has been placed. `,
-      Date: Date.now(),
     });
     await notification.save();
     await User.findByIdAndUpdate(id, {

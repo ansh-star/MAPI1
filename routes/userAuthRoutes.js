@@ -27,6 +27,7 @@ const {
   getRetailerRequest,
   getRetailers,
   getWholesalers,
+  getUserStats,
 } = require("../controllers/getUserDetails");
 const { searchMobileNumber } = require("../controllers/searchController");
 const {
@@ -63,7 +64,7 @@ router.post(
 router.post("/verify-otp", verifyOTP, loginUser);
 
 // Route to reset password
-router.post("/reset-password", verifyOTP, resetPassword);
+router.post("/reset-password", verifyOTP, checkUserExist, resetPassword);
 
 // Middleware to verify the token for subsequent routes
 router.use(verifyToken);
@@ -73,6 +74,7 @@ router.get("/details", userDetails);
 
 router.get("/search", searchMobileNumber);
 
+router.get("/stats", getUserStats);
 // Route to update user details
 router.put("", updateUserDetails);
 
