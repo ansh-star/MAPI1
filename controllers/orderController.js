@@ -1,3 +1,4 @@
+const { default: mongoose } = require("mongoose");
 const Notification = require("../models/Nodtification");
 const Order = require("../models/Order");
 const Product = require("../models/Product");
@@ -87,6 +88,7 @@ const placeOrder = async (req, res) => {
 
 const getOrders = async (req, res) => {
   const { id } = req.user;
+  const { page = 1, limit = 10 } = req.query;
   try {
     const user = await User.findById(id)
       .select("orders")
@@ -98,12 +100,25 @@ const getOrders = async (req, res) => {
             model: "Product",
           },
           {
-            path: "address",
-            model: "Address",
+            path: "user_id",
+            model: "User",
           },
         ],
+        options: {
+          limit: parseInt(limit),
+          skip: (parseInt(page) - 1) * parseInt(limit),
+        },
       });
-    res.status(200).json({ success: true, orders: user?.orders || [] });
+
+    const result = await User.findById(id, { orders: 1 });
+
+    const totalOrdersCount = result.orders.length || 0;
+
+    res.status(200).json({
+      success: true,
+      orders: user?.orders || [],
+      totalOrdersCount,
+    });
   } catch (error) {
     res.status(200).json({
       success: false,
@@ -159,7 +174,7 @@ const updateOrder = async (req, res) => {
 const assignToDeliveryPartner = async (req, res) => {
   const { deliveryPartner, order_id } = req.body;
   try {
-    const order = await Order.findById(order_id);
+    const order = await Order.findById(order_id).populate("user_id");
     if (!order) {
       return res
         .status(200)
@@ -172,6 +187,7 @@ const assignToDeliveryPartner = async (req, res) => {
         { new: true }
       );
       order.assigned = deliveryPartner;
+      order.order_status = "Assigned";
       await order.save();
     }
     if (assignOrder) {
@@ -191,18 +207,15 @@ const assignToDeliveryPartner = async (req, res) => {
         }with order id of (#${order_id})`
       );
 
-      await User.updateMany(
-        { role: Roles.ADMIN },
-        { $pull: { orders: order_id } }
-      );
-
-      return res
-        .status(200)
-        .json({ success: true, message: "Order assigned to delivery partner" });
+      return res.status(200).json({
+        success: true,
+        message: "Order assigned to delivery partner",
+        order,
+      });
     }
     return res.status(200).json({
-      success: false,
-      message: "Order not assigned to delivery partner",
+      success: true,
+      message: "Order already assigned to delivery partner",
     });
   } catch (error) {
     return res.status(200).json({ success: false, message: error.message });
@@ -288,6 +301,20 @@ const updateDeliveryStatus = async (req, res) => {
   }
 };
 
+const searchOrders = async (req, res) => {
+  const { id } = req.user;
+  const { searchQuery } = req.body;
+  try {
+    const orders = await Order.find({
+      user_id: id,
+      order_status: { $regex: searchQuery, $options: "i" },
+    });
+    res.status(200).json({ success: true, orders });
+  } catch (error) {
+    res.status(200).json({ success: false, message: error.message });
+  }
+};
+
 module.exports = {
   placeOrder,
   getOrders,
@@ -297,4 +324,5 @@ module.exports = {
   placeInCart,
   getRefundOrders,
   updateDeliveryStatus,
+  searchOrders,
 };

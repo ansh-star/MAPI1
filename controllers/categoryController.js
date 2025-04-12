@@ -75,7 +75,13 @@ const getCategories = async (req, res) => {
       { $skip: (parseInt(pageNumber) - 1) * parseInt(limit) },
       { $limit: parseInt(limit) },
     ]);
-    res.status(200).json({ success: true, categories });
+    res
+      .status(200)
+      .json({
+        success: true,
+        categories,
+        totalDocuments: await Category.estimatedDocumentCount(),
+      });
   } catch (error) {
     res.status(200).json({ success: false, message: error.message });
   }

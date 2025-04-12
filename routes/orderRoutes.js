@@ -8,6 +8,7 @@ const {
   placeInCart,
   getRefundOrders,
   updateDeliveryStatus,
+  searchOrders,
 } = require("../controllers/orderController");
 const {
   verifyDeliveryPartner,
@@ -23,6 +24,8 @@ const router = express.Router();
 router.post("", placeOrder);
 
 router.get("", getOrders);
+
+router.get("/search", searchOrders);
 
 router.put("", verifyDeliveryPartner, updateOrder);
 

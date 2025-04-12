@@ -2,6 +2,7 @@ const { default: mongoose } = require("mongoose");
 const User = require("../models/User");
 const Product = require("../models/Product");
 const Roles = require("../utils/roles");
+const Order = require("../models/Order");
 
 const userDetails = async (req, res) => {
   try {
@@ -315,13 +316,19 @@ const getUserStats = async (req, res) => {
     if (req.user.role === Roles.ADMIN) {
       var totalOrders = await Order.estimatedDocumentCount({});
       var totalSales = await Order.aggregate([
-        { $group: { _id: null, totalSales: { $sum: "$totalAmount" } } },
+        {
+          $group: {
+            _id: null,
+            order_total_amount: { $sum: "$order_total_amount" },
+          },
+        },
       ]);
+      totalSales = totalSales.length > 0 ? totalSales[0].order_total_amount : 0;
     } else {
       var user = await User.findById(req.user.id).populate("orders");
       var totalOrders = user.orders.length;
       var totalSales = user.orders.reduce(
-        (acc, order) => acc + order.totalAmount,
+        (acc, order) => acc + order?.order_total_amount,
         0
       );
     }
@@ -338,7 +345,7 @@ const getUserStats = async (req, res) => {
     return res.status(200).json({
       success: true,
       totalOrders,
-      totalSales: totalSales[0]?.totalSales || 0,
+      totalSales,
       totalWholesalers,
       totalRetailers,
       totalDeliveryPartners,
@@ -352,7 +359,29 @@ const getUserStats = async (req, res) => {
     });
   }
 };
+const getUsers = async (req, res) => {
+  const { limit = 10, page = 1 } = req.query;
+  try {
+    const users = await User.aggregate([
+      { $skip: (parseInt(page) - 1) * parseInt(limit) },
+      { $limit: parseInt(limit) },
+      { $project: { fullName: 1, mobileNumber: 1, role: 1 } },
+    ]);
 
+    res.status(200).json({
+      success: true,
+      users,
+      totalDocuments: await User.countDocuments(),
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(200).json({
+      success: false,
+      message: "Error occurred while fetching users",
+      error: error.message,
+    });
+  }
+};
 module.exports = {
   userDetails,
   getCart,
@@ -362,4 +391,5 @@ module.exports = {
   getWholesalers,
   getDeliveryPartner,
   getUserStats,
+  getUsers,
 };
