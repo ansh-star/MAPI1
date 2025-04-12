@@ -87,39 +87,85 @@ const placeOrder = async (req, res) => {
 };
 
 const getOrders = async (req, res) => {
-  const { id } = req.user;
+  const { id, role } = req.user;
   const { page = 1, limit = 10 } = req.query;
   try {
-    const user = await User.findById(id)
-      .select("orders")
-      .populate({
-        path: "orders",
-        populate: [
-          {
-            path: "products.productId",
-            model: "Product",
+    if (role === Roles.ADMIN) {
+      let orders = await Order.aggregate([
+        { $skip: (parseInt(page) - 1) * parseInt(limit) },
+        { $limit: parseInt(limit) },
+        {
+          $lookup: {
+            from: "users",
+            localField: "user_id",
+            foreignField: "_id",
+            as: "user_id",
           },
-          {
-            path: "user_id",
-            model: "User",
-          },
-        ],
-        options: {
-          limit: parseInt(limit),
-          skip: (parseInt(page) - 1) * parseInt(limit),
         },
+      ]);
+      // Step 2: Collect all productIds
+      const productIds = [];
+      orders.forEach((order) => {
+        orders.user_id = order.user_id[0];
+        order.products.forEach((p) => productIds.push(p.productId));
       });
 
-    const result = await User.findById(id, { orders: 1 });
+      // Step 3: Fetch all products in one go
+      const allProducts = await Product.find({
+        _id: { $in: productIds },
+      }).lean();
+      const productMap = new Map(allProducts.map((p) => [p._id.toString(), p]));
 
-    const totalOrdersCount = result.orders.length || 0;
+      // Step 4: Map product data back into each order
+      orders = orders.map((order) => {
+        order.products = order.products.map((p) => ({
+          ...p,
+          productId: productMap.get(p.productId.toString()) || null,
+        }));
+        return order;
+      });
+      // orders = orders.map((order) => {
+      //   order.user_id = order.user_id[0];
+      // });
+      const totalOrdersCount = await Order.estimatedDocumentCount({});
+      return res.status(200).json({
+        success: true,
+        orders,
+        totalOrdersCount,
+      });
+    } else {
+      const user = await User.findById(id)
+        .select("orders")
+        .populate({
+          path: "orders",
+          populate: [
+            {
+              path: "products.productId",
+              model: "Product",
+            },
+            {
+              path: "user_id",
+              model: "User",
+            },
+          ],
+          options: {
+            limit: parseInt(limit),
+            skip: (parseInt(page) - 1) * parseInt(limit),
+          },
+        });
 
-    res.status(200).json({
-      success: true,
-      orders: user?.orders || [],
-      totalOrdersCount,
-    });
+      const result = await User.findById(id, { orders: 1 });
+
+      const totalOrdersCount = result?.orders?.length || 0;
+
+      return res.status(200).json({
+        success: true,
+        orders: user?.orders || [],
+        totalOrdersCount,
+      });
+    }
   } catch (error) {
+    console.log(error);
     res.status(200).json({
       success: false,
       message: error.message,
